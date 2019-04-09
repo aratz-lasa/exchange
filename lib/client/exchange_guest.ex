@@ -1,5 +1,6 @@
-defmodule ExchangeClient do
-    use GenStateMachine
+defmodule ExchangeGuest do
+  use ExchangeClient  
+  use GenStateMachine
     
     # Client API
     def start_link(%{:server_pid=>_}=default) do
@@ -12,6 +13,14 @@ defmodule ExchangeClient do
     
     def is_connected(pid) do
         GenStateMachine.call(pid, :is_connected)
+    end
+
+    def receive_msg(pid, msg) do
+      GenStateMachine.cast(pid, {:read, msg})
+    end
+
+    def send_msg(pid, msg) do
+      GenStateMachine.cast(pid, {:write, msg})
     end
     # Callbacks
   
@@ -28,17 +37,28 @@ defmodule ExchangeClient do
         is_nil(exchange_pid) -> :keep_state_and_data
         true -> data = Map.put(data, :exchande_pid, exchange_pid)
             IO.puts "Exchange PID #{inspect exchange_pid}"
+            # TODO: start exchange notifier
             {:next_state, :connected, data}
     end    
   end
 
   @impl true
-  def handle_event({:call, from}, :is_connected, :connected, _data) do
-    {:keep_state_and_data, [{:reply, from, true}]} 
+  def handle_event(:cast, {:write, msg}, :connected, data) do
+    exchange_pid = Map.get(data, :exchange_pid)
+
   end
 
   @impl true
-  def handle_event({:call, from}, :is_connected, _state, _data) do
-    {:keep_state_and_data, [{:reply, from, false}]} 
+  def handle_event(:cast, {:read, msg}, :connected, data) do
+    IO.puts msg
   end
+
+  @impl true
+  def handle_event({:call, from}, :is_connected, state, _data) do
+    case state do
+      :connected -> {:keep_state_and_data, [{:reply, from, true}]} 
+      _ -> {:keep_state_and_data, [{:reply, from, false}]} 
+    end
+  end
+
 end

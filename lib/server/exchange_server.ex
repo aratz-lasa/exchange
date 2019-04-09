@@ -10,8 +10,8 @@ defmodule ExchangeServer do
       GenServer.start_link(__MODULE__, %{})
     end
 
-    def register(pid) do
-        GenServer.call(pid, :register)
+    def sign(pid) do
+        GenServer.call(pid, :sign)
     end
 
     def purge(pid, exchange_id) do
@@ -31,7 +31,7 @@ defmodule ExchangeServer do
     end
   
     @impl true
-    def handle_call(:register, from, exchange_registry) do
+    def handle_call(:sign, from, exchange_registry) do
       exchange_id = Randomizer.generate!(20)
       {pid, _} = from
       exchange_registry = Map.put(exchange_registry, exchange_id, pid)
