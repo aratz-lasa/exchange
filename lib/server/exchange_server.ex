@@ -27,6 +27,7 @@ defmodule ExchangeServer do
   
     @impl true
     def init(exchange_registry) do
+      Process.register(self(), :exchange_server)
       {:ok, exchange_registry}
     end
   
