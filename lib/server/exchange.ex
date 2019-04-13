@@ -2,13 +2,17 @@ defmodule Exchange do
     use GenServer
 
     # server's API
-    def start(host_pid, xch_id) when is_pid(host_pid) do
-      GenServer.start(__MODULE__, {host_pid, xch_id})
-    end
+    def add_xch_id(pid, xch_id) do
+       :ok = GenServer.call(pid, {:add_xch_id, xch_id})
+    end   
 
     # host's API
+    def start_link(host_pid) when is_pid(host_pid) do
+        GenServer.start_link(__MODULE__, host_pid)
+      end
+  
     def add_good(pid, good) do
-        GenServer.call(pid, {:add_good, good})
+        :ok = GenServer.call(pid, {:add_good, good})
     end
 
     def msg_to_guest(pid, guest, msg) do
@@ -17,7 +21,7 @@ defmodule Exchange do
 
     # guests' API
     def join_exchange(pid) do
-        GenServer.call(pid, :join_xch)
+        :ok = GenServer.call(pid, :join_xch)
     end
 
     def msg_to_host(pid, guest, msg) do
@@ -27,9 +31,15 @@ defmodule Exchange do
 
     # callbacks
     @impl true
-    def init({host_pid, xch_id}) when is_pid(host_pid) and is_bitstring(xch_id) do
-        xch_info = %{:xch_id=>xch_id, :host=>host_pid, :guests=> [], :goods=>[]}
+    def init(host_pid) when is_pid(host_pid) do
+        xch_info = %{:xch_id=>nil, :host=>host_pid, :guests=> [], :goods=>[]}
         {:ok, xch_info}
+    end
+
+    @impl true
+    def handle_call({:add_xch_id, xch_id}, _from, xch_info) do
+        xch_info =  Map.replace!(xch_info, :xch_id, xch_id)
+        {:reply, :ok, xch_info}
     end
 
     @impl true
@@ -53,7 +63,7 @@ defmodule Exchange do
         send(guest, {xch_id, msg})
         {:noreply, xch_info}
     end
-    
+
     @impl true
     def handle_cast({:msg_to_host, guest, msg}, xch_info) do
         xch_id = Map.get(xch_info, :xch_id)
