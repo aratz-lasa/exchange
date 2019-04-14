@@ -1,16 +1,25 @@
 defmodule Exchange do
     use GenServer
 
-    # server's API
+    ## API
+        # server
     def add_xch_id(pid, xch_id) do
        :ok = GenServer.call(pid, {:add_xch_id, xch_id})
     end   
 
-    # host's API
+        # host
     def start_link(host_pid) when is_pid(host_pid) do
         GenServer.start_link(__MODULE__, host_pid)
       end
-  
+
+    def connect_host(pid) do
+        :ok = GenServer.call(:connect_host)
+    end
+
+    def disconnect_host(pid) do
+        :ok = GenServer.call(:disconnect_host)
+    end
+
     def add_good(pid, good) do
         :ok = GenServer.call(pid, {:add_good, good})
     end
@@ -19,7 +28,11 @@ defmodule Exchange do
         GenServer.cast(pid, {:msg_to_guest, guest, msg})
     end
 
-    # guests' API
+    def accept_offer(pid, guest, offer_id) do
+        GenServer.cast(pid, {:accept_offer, guest, offer_id})
+    end
+
+        # guest
     def join_exchange(pid) do
         :ok = GenServer.call(pid, :join_xch)
     end
