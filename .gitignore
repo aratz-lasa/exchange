@@ -8,4 +8,7 @@ erl_crash.dump
 *.beam
 /config/*.secret.exs
 .elixir_ls/
+# steps for simple tests
 steps.txt
+# TODO file
+TODO.txt
