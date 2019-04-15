@@ -20,7 +20,7 @@ defmodule Exchange do
         :ok = GenServer.cast(pid, :disconnect_host)
     end
 
-    def add_good(pid, good) do
+    def add_good(pid, %Good{}=good) do
         :ok = GenServer.call(pid, {:add_good, good})
     end
 
@@ -46,7 +46,7 @@ defmodule Exchange do
     end
 
     def get_goods(pid) do
-        :ok = GenServer.call(pid, :get_goods)
+        GenServer.call(pid, :get_goods)
     end
 
     def msg_to_host(pid, guest, msg) do
@@ -78,7 +78,7 @@ defmodule Exchange do
     end
 
     @impl true
-    def handle_call({:add_good, good}, _from, xch_info) do
+    def handle_call({:add_good, %Good{}=good}, _from, xch_info) do
         new_goods =  [good | Map.get(xch_info, :goods)]
         xch_info = Map.replace!(xch_info, :goods, new_goods)
         {:reply, :ok, xch_info}

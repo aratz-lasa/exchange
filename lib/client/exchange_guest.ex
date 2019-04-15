@@ -29,7 +29,7 @@ defmodule ExchangeGuest do
   @impl true
   def handle_event(:cast, {:connect, exchange_code}, :searching, data) do
     server_pid = Map.get(data, :server_pid)
-    exchange_pid = ExchangeServer.connect(server_pid, exchange_code)
+    exchange_pid = ExchangeServer.resolve(server_pid, exchange_code)
     cond do
         is_nil(exchange_pid) ->
           :keep_state_and_data

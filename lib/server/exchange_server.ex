@@ -10,16 +10,16 @@ defmodule ExchangeServer do
       GenServer.start_link(__MODULE__, %{})
     end
 
-    def sign(pid) do
-        GenServer.call(pid, :sign)
+    def sign(pid, xch_pid) do
+        GenServer.call(pid, {:sign, xch_pid})
     end
 
-    def purge(pid, exchange_id) do
-      GenServer.cast(pid, {:purge, exchange_id})
+    def purge(pid, xch_id) do
+      GenServer.cast(pid, {:purge, xch_id})
     end
 
-    def connect(pid, exchange_id) do
-        GenServer.call(pid, {:connect, exchange_id})
+    def resolve(pid, xch_id) do
+        GenServer.call(pid, {:resolve, xch_id})
     end
 
 
@@ -32,22 +32,22 @@ defmodule ExchangeServer do
     end
   
     @impl true
-    def handle_call(:sign, from, exchange_registry) do
-      exchange_id = Randomizer.generate!(20)
-      {pid, _} = from
-      exchange_registry = Map.put(exchange_registry, exchange_id, pid)
-      {:reply, exchange_id, exchange_registry}
+    def handle_call({:sign, xch_pid}, _from, exchange_registry) do
+      xch_id = Randomizer.generate!(20)
+      exchange_registry = Map.put(exchange_registry, xch_id, xch_pid)
+      :ok = Exchange.add_xch_id(xch_pid, xch_id)
+      {:reply, {:ok, xch_id}, exchange_registry}
     end
     
     @impl true
-    def handle_call({:connect, exchange_id}, _from, exchange_registry) do
-      pid = Map.get(exchange_registry, exchange_id)
-      {:reply, pid, exchange_registry}
+    def handle_call({:resolve, xch_id}, _from, exchange_registry) do
+      xch_pid = Map.get(exchange_registry, xch_id)
+      {:reply, {:ok, xch_pid}, exchange_registry}
     end
 
     @impl true
-    def handle_cast({:purge, exchange_id}, exchange_registry) do
-      exchange_registry = Map.delete(exchange_registry, exchange_id)
+    def handle_cast({:purge, xch_id}, exchange_registry) do
+      exchange_registry = Map.delete(exchange_registry, xch_id)
       :ok
       {:noreply, exchange_registry}
     end

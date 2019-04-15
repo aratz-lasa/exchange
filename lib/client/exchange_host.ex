@@ -11,8 +11,8 @@ defmodule ExchangeHost do
       GenStateMachine.start_link(__MODULE__, default)
     end
 
-    def sign(pid) do
-        GenStateMachine.cast(pid, :sign)
+    def sign(pid, xch_pid) do
+        GenStateMachine.cast(pid, {:sign, xch_pid})
     end
 
     def unsign(pid) do
@@ -34,9 +34,9 @@ defmodule ExchangeHost do
   end
 
   @impl true
-  def handle_event(:cast, :sign, :unsigned, data) do
+  def handle_event(:cast, {:sign, xch_pid}, :unsigned, data) do
     server_pid = Map.get(data, :server_pid)
-    exchange_code = ExchangeServer.sign(server_pid)
+    exchange_code = ExchangeServer.sign(server_pid, xch_pid)
     IO.puts "Exchange Code #{inspect exchange_code}"
     data = Map.put(data, :exchange_code, exchange_code) 
     {:next_state, :signed, data}
