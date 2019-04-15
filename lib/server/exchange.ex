@@ -140,7 +140,7 @@ defmodule Exchange do
     end
 
     @impl true
-    def handle_cast({:send_offer, guest, offer}, xch_info) do
+    def handle_cast({:send_offer, guest, %Offer{}=offer}, xch_info) do
         xch_id = Map.get(xch_info, :xch_id)
         Map.get(xch_info, :host) |> send({xch_id, guest, offer})
         {:noreply, xch_info}
