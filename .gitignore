@@ -12,3 +12,5 @@ erl_crash.dump
 steps.txt
 # TODO file
 TODO.txt
+# mnesia
+Mnesia.*
