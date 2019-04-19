@@ -1,4 +1,4 @@
-defmodule Exchange do
+defmodule Exchange.Exchange do
     use GenServer
 
     ## API

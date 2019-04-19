@@ -1,4 +1,5 @@
 %{
   "gen_state_machine": {:hex, :gen_state_machine, "2.0.5", "9ac15ec6e66acac994cc442dcc2c6f9796cf380ec4b08267223014be1c728a95", [:mix], [], "hexpm"},
+  "ranch": {:hex, :ranch, "1.7.1", "6b1fab51b49196860b733a49c07604465a47bdb78aa10c1c16a3d199f7f8c881", [:rebar3], [], "hexpm"},
   "randomizer": {:hex, :randomizer, "1.1.0", "2a26f05b5f67acc6b82c87913c201d3e0f9cd2e64eeb350f8809f1c5e8b5ad13", [:mix], [], "hexpm"},
 }

@@ -1,4 +1,4 @@
-defmodule ExchangeServer do
+defmodule Exchange.Storage do
     use GenServer
     
     # Client API
@@ -35,7 +35,7 @@ defmodule ExchangeServer do
     def handle_call({:sign, xch_pid}, _from, exchange_registry) do
       xch_id = Randomizer.generate!(20)
       exchange_registry = Map.put(exchange_registry, xch_id, xch_pid)
-      :ok = Exchange.add_xch_id(xch_pid, xch_id)
+      :ok = Exchange.Exchange.add_xch_id(xch_pid, xch_id)
       {:reply, {:ok, xch_id}, exchange_registry}
     end
     
