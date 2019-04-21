@@ -1,6 +1,7 @@
 defmodule Exchange.User do
     use GenServer
     alias Exchange.Protocol
+    alias Exchange.Execute
   
     @behaviour :ranch_protocol
   
@@ -20,8 +21,10 @@ defmodule Exchange.User do
   
     def handle_info({:tcp, _socket, msg}, state = %{socket: socket, transport: transport}) do
       IO.puts "Received MSG: #{IO.inspect msg}"
-      {opcode, data} = Protocol.parse_msg(msg)
-      transport.send(socket, opcode<>data)
+      response = Protocol.decode(msg)
+                  |> Execute.execute
+                  |> Protocol.encode
+      transport.send(socket, response)
       {:noreply, state}
     end
     def handle_info({:tcp_closed, _socket}, state = %{socket: socket, transport: transport}) do
