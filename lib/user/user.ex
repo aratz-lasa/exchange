@@ -1,4 +1,5 @@
 defmodule Exchange.User do
+    require Logger  
     use GenServer
     alias Exchange.Protocol
     alias Exchange.Execute
@@ -6,13 +7,12 @@ defmodule Exchange.User do
     @behaviour :ranch_protocol
   
     def start_link(ref, socket, transport, _opts) do
-      IO.puts "Good 1"
       pid = :proc_lib.spawn_link(__MODULE__, :init, [ref, socket, transport])
       {:ok, pid}
     end
   
     def init(ref, socket, transport) do
-      IO.puts "Starting protocol"
+      Logger.debug "Starting socket"
   
       :ok = :ranch.accept_ack(ref)
       :ok = transport.setopts(socket, [{:active, true}])
@@ -20,7 +20,8 @@ defmodule Exchange.User do
     end
   
     def handle_info({:tcp, _socket, msg}, state = %{socket: socket, transport: transport}) do
-      IO.puts "Received MSG: #{IO.inspect msg}"
+      Logger.debug "Received MSG: #{IO.inspect msg}"
+      
       response = Protocol.decode(msg)
                   |> Execute.execute
                   |> Protocol.encode
@@ -28,7 +29,8 @@ defmodule Exchange.User do
       {:noreply, state}
     end
     def handle_info({:tcp_closed, _socket}, state = %{socket: socket, transport: transport}) do
-      IO.puts "Closing"
+      Logger.debug "Closing socket"
+      
       transport.close(socket)
       {:stop, :normal, state}
     end
