@@ -1,9 +1,11 @@
 defmodule Exchange.User do
     use GenServer
+    alias Exchange.Protocol
   
     @behaviour :ranch_protocol
   
     def start_link(ref, socket, transport, _opts) do
+      IO.puts "Good 1"
       pid = :proc_lib.spawn_link(__MODULE__, :init, [ref, socket, transport])
       {:ok, pid}
     end
@@ -16,9 +18,10 @@ defmodule Exchange.User do
       :gen_server.enter_loop(__MODULE__, [], %{socket: socket, transport: transport})
     end
   
-    def handle_info({:tcp, _socket, data}, state = %{socket: socket, transport: transport}) do
-      IO.inspect data
-      transport.send(socket, data)
+    def handle_info({:tcp, _socket, msg}, state = %{socket: socket, transport: transport}) do
+      IO.puts "Received MSG: #{IO.inspect msg}"
+      {opcode, data} = Protocol.parse_msg(msg)
+      transport.send(socket, opcode<>data)
       {:noreply, state}
     end
     def handle_info({:tcp_closed, _socket}, state = %{socket: socket, transport: transport}) do
