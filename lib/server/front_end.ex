@@ -8,7 +8,7 @@ defmodule Exchange.FrontEnd do
 
   @impl true
   def init(_args) do
-    port = Application.get_env(:exchange,:port)
+    port = Application.get_env(:exchange, :port)
     opts = [{:port, port}]
     Logger.info "Ranch listening"
     :ranch.start_listener(:exchange_front_end, :ranch_tcp, opts, Exchange.User, [])

@@ -4,8 +4,8 @@ defmodule Exchange.Protocol do
         {opcode, data}
     end
 
-    def encode(msg) do
-        #TODO: decide how to encode response
+    def encode({opcode, data}) do
+        opcode <> data
     end
 
 end

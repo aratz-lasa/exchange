@@ -16,7 +16,6 @@ defmodule Exchange.MixProject do
     [
       mod: {Exchange.Start, []},
       extra_applications: [:logger],
-      env: [port: 5000]
     ]
   end
 
