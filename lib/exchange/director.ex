@@ -1,6 +1,5 @@
 defmodule Exchange.Director do
     use GenServer
-    alias :mnesia, as: Mnesia
     alias Exchange.Storage
 
     def start_link(_args) do
@@ -27,9 +26,10 @@ defmodule Exchange.Director do
         users_found = Storage.search_username(user)
         case length(users_found) do
             0 -> Storage.create_user(user)
+                    |> reply(state)
             _ -> {:error, "Username already in use"}
+                    |> reply(state)
         end
-        # TODO: check if user exists, and if not, save it in Storage
     end
 
     @impl true
@@ -37,8 +37,14 @@ defmodule Exchange.Director do
         users_found = Storage.search_user(user)
         case length(users_found) do
             1 -> {:ok, "Logged in"}
+                  |> reply(state)
             _ -> {:error, "Incorrect username or password"}
+                    |> reply(state)
         end
     end
 
+
+    def reply(response, state) do
+        {:reply, response, state}
+    end
 end

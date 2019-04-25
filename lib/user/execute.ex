@@ -3,18 +3,20 @@ defmodule Exchange.Execute do
 
     # sign-in
     def execute({1, data}) do
-        case String.split(data, "#") do
-            user = [username, password] -> 
+        user = String.split(data, "#") 
+        case user do
+            [username, password] -> 
                 User.to_struct(user)
-                |> Director.sign_in
+                 |> Director.sign_in
             _ -> {:error, "Invalid input"}
         end
     end
     
     # log-in
     def execute({2, data}) do
-        case String.split(data, "#") do
-            user = [username, password] -> 
+        user = String.split(data, "#") 
+        case user do
+            [username, password] -> 
                 User.to_struct(user)
                 |> Director.log_in
             _ -> {:error, "Invalid input"}

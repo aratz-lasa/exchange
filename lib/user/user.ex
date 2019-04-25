@@ -25,6 +25,9 @@ defmodule Exchange.User do
       response = Protocol.decode(msg)
                   |> Execute.execute
                   |> Protocol.encode
+     
+      Logger.debug "Response: #{IO.inspect response}"
+      
       transport.send(socket, response)
       {:noreply, state}
     end

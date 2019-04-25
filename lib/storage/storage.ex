@@ -1,4 +1,6 @@
 defmodule Exchange.Storage do
+  alias :mnesia, as: Mnesia
+
     def search_username(%User{}=user) do
       {:atomic, users_found} = Mnesia.transaction(
             fn ->
@@ -12,10 +14,9 @@ defmodule Exchange.Storage do
     def search_user(%User{}=user) do
       {:atomic, users_found} = Mnesia.transaction(
             fn ->
-                Mnesia.read(User.to_record(user))
+                Mnesia.match_object(User.to_record(user))
             end
         )
-      
       users_found
     end
 
