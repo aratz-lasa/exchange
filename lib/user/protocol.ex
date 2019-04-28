@@ -1,4 +1,6 @@
 defmodule Exchange.Protocol do
+    import Constants, only: :macros
+    
     @error_opcode 400
     @ok_opcode 200
 
@@ -15,4 +17,6 @@ defmodule Exchange.Protocol do
         <<@error_opcode::8>> <> data
     end
 
+    define :sign_in, 1
+    define :log_in, 2
 end

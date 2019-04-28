@@ -10,9 +10,10 @@ defmodule Exchange.Start do
         Mnesia.create_table(User, [attributes: User.attributes(), index: User.attributes()])
         Mnesia.create_table(Offer, [attributes: Offer.attributes()])
         Mnesia.create_table(Good, [attributes: Good.attributes()])
+        Mnesia.create_table(Exchange, [attributes: Exchange.attributes()])
 
         # Start children
-        children = [{Exchange.Director, []}, {Exchange.FrontEnd, []}]
+        children = [{Exchange.Supervisor.Director.Exchanges, []}, {Exchange.FrontEnd, []}]
         Supervisor.start_link(children, strategy: :one_for_one)
     end
 end

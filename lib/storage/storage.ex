@@ -31,4 +31,8 @@ defmodule Exchange.Storage do
         _ -> {:error, "Failed while sign in"}
       end
     end
+
+    def create_exchange(%Exchange{}=exchange) do
+      # TODO: create a exchange in Mnesia
+    end
   end

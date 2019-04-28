@@ -1,6 +1,7 @@
 defmodule Exchange.Director do
     use GenServer
     alias Exchange.Storage
+    alias Exchange.Supervisor.Exchanges
 
     def start_link(_args) do
         GenServer.start_link(__MODULE__, [], name: :director)
@@ -13,6 +14,10 @@ defmodule Exchange.Director do
 
     def log_in(%User{}=user) do
         GenServer.call(:director, {:log_in, user})
+    end
+
+    def sign_exchange(user) when is_binary(user) do
+        GenServer.call(:director, {:sign_exchange, user})
     end
 
     # Callbacks
@@ -43,6 +48,16 @@ defmodule Exchange.Director do
         end
     end
 
+    @impl true
+    def handle_call({:sign_exchange, user}, _from, state) do
+        id = Randomizer.generate!(20)
+        {:ok, pid} = Exchanges.start_exchange({id, user})
+        #TODO: check of it is correct Exchange creation
+        [id, user, pid]
+            |> Exchange.to_struct
+            |>Storage.create_exchange
+            |> reply(state)
+    end
 
     def reply(response, state) do
         {:reply, response, state}

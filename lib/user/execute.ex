@@ -25,7 +25,7 @@ defmodule Exchange.Execute do
 
     # retrieve unread data
     def execute({3, data}) do
-            
+        
     end
 
     ## HOST
