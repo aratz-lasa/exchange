@@ -12,6 +12,6 @@ defmodule Exchange.Supervisor.Exchanges do
     end
 
     def start_exchange(args) do
-        DynamicSupervisor.start_child(__MODULE__, {Exchange, [args]})
+        DynamicSupervisor.start_child(__MODULE__, {Exchange, args})
     end
 end

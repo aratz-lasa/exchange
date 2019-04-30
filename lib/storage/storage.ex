@@ -32,7 +32,15 @@ defmodule Exchange.Storage do
       end
     end
 
-    def create_exchange(%Exchange{}=exchange) do
-      # TODO: create a exchange in Mnesia
+    def create_exchange(%Exchange{}=exchange) do 
+      {:atomic, result} = Mnesia.transaction(
+        fn ->
+          Mnesia.write(Exchange.to_record(exchange))
+        end
+      )
+      case result do
+        :ok -> {:ok, "Exchanged created"}
+        _ -> {:error, "Failed to create exchange"}
+      end
     end
   end

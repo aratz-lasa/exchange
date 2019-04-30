@@ -52,7 +52,7 @@ defmodule Exchange.Director do
     def handle_call({:sign_exchange, user}, _from, state) do
         id = Randomizer.generate!(20)
         {:ok, pid} = Exchanges.start_exchange({id, user})
-        #TODO: check of it is correct Exchange creation
+        #TODO: check if it is correct Exchange creation
         [id, user, pid]
             |> Exchange.to_struct
             |>Storage.create_exchange
