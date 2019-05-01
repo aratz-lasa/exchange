@@ -7,6 +7,7 @@ defmodule ExchangeTest do
     opts = [active: false]
     port = Application.get_env(:exchange, :port)
     {:ok, socket} = :gen_tcp.connect('localhost', port, opts)
+    # Sign in
     opcode_out = 1
     data_out = "koln#pass"
     msg_out = <<opcode_out>> <> data_out
