@@ -28,4 +28,15 @@ defmodule ExchangeTest do
     [opcode_in | data_in] = msg_in
     assert opcode_in == 200
   end
+
+  test "sign in exchange", state do
+    socket = state[:socket]
+    opcode_out = 4
+    data_out = ""
+    msg_out = <<opcode_out>> <> data_out
+    :ok = :gen_tcp.send(socket, msg_out)
+    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
+    [opcode_in | data_in] = msg_in
+    assert opcode_in == 200
+  end
 end

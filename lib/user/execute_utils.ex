@@ -5,14 +5,30 @@ defmodule Exchange.Execute.Utils do
             [username, password] -> 
                 User.to_struct(user)
                     |> fun.()
-                    |>case do
-                        {:ok, data} ->
-                            new_state = Map.put(state, :user, User.to_struct(user))
-                            respond_ok(data, new_state)
-                        _ -> 
-                            respond_error(data, state)
-                        end
+                    |> respond {Map.put(state, :user, User.to_struct(user)), state}
             _ -> respond_error("Invalid input", state)
+        end
+    end
+
+    def respond(result, state) when not is_tuple(state) do
+        case result do
+            {:ok, data} ->
+                respond_ok data, state
+            {:error, data} ->
+                respond_error data, state
+            _ ->
+                respond_error "Error processing request", state
+        end
+    end
+
+    def respond(result, {ok_state, error_state}) do
+        case result do
+            {:ok, data} ->
+                respond_ok data, ok_state
+            {:error, data} ->
+                respond_error data, error_state
+            _ ->
+                respond_error "Error processing request", error_state
         end
     end
 

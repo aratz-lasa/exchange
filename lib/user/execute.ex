@@ -19,7 +19,13 @@ defmodule Exchange.Execute do
     ## HOST
     # sign exchange
     def execute({4, data}, state) do
-        
+        if Map.has_key?(state, :user) do
+            Map.get(state, :user)
+             |> Director.sign_exchange
+             |> Utils.respond(state)
+        else
+            Utils.respond_error("Not logged in", state)
+        end
     end
     
     # connect host to exchange

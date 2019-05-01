@@ -16,7 +16,7 @@ defmodule Exchange.Director do
         GenServer.call(:director, {:log_in, user})
     end
 
-    def sign_exchange(user) when is_binary(user) do
+    def sign_exchange(user) when is_map(user) do
         GenServer.call(:director, {:sign_exchange, user})
     end
 
@@ -51,6 +51,7 @@ defmodule Exchange.Director do
     @impl true
     def handle_call({:sign_exchange, user}, _from, state) do
         id = Randomizer.generate!(20)
+        username = Map.get(user, :username)
         {:ok, pid} = Exchanges.start_exchange({id, user})
         #TODO: check if it is correct Exchange creation
         [id, user, pid]
