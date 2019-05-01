@@ -23,15 +23,17 @@ defmodule Exchange.User do
       Logger.debug "Received msg: #{IO.inspect msg}"
       
       {raw_response, new_state} = Protocol.decode(msg)
-                  |> Execute.execute(state)
+                                  |> Execute.execute(state)
       response = Protocol.encode(raw_response)
-     
-      Logger.debug "State: #{IO.inspect new_state}"
+      
+      Logger.debug "State: #{inspect(new_state)}"
+      
       Logger.debug "Response: #{IO.inspect response}"
       
       transport.send(socket, response)
       {:noreply, new_state}
     end
+
     def handle_info({:tcp_closed, _socket}, state = %{socket: socket, transport: transport}) do
       Logger.debug "Closing socket"
       
