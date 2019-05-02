@@ -2,7 +2,6 @@ defmodule Exchange.Exchange do
     use GenServer
     
     def start_link({id, username}=args) do
-        IO.puts "Registered exchange: #{String.to_atom(id)}"
         GenServer.start_link(__MODULE__, args, name: String.to_atom(id))
     end
 
