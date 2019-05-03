@@ -10,9 +10,10 @@ defmodule Exchange.Execute.Utils do
         end
     end
 
-    def parse_msg(data) when is_binary(data) do
-        [to| msg] = String.split(data, "#")
-        {to, to_string(msg)}
+    def parse_exchange_msg(data) when is_binary(data) do
+        [exchange| rest_msg] = String.split(data, "#")
+        [guest | msg] = rest_msg
+        {exchange, guest, to_string(msg)}
     end
 
     def respond(result, state) when not is_tuple(state) do
