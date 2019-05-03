@@ -10,6 +10,11 @@ defmodule Exchange.Execute.Utils do
         end
     end
 
+    def parse_msg(data) when is_binary(data) do
+        [to| msg] = String.split(data, "#")
+        {to, to_string(msg)}
+    end
+
     def respond(result, state) when not is_tuple(state) do
         case result do
             {:ok, data} ->
@@ -40,4 +45,5 @@ defmodule Exchange.Execute.Utils do
         {{:error, data}, state}
     end
     
+
 end

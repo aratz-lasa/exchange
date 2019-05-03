@@ -35,24 +35,24 @@ defmodule Exchange.Execute do
         |> Utils.respond(state)
     end
 
-    # add good to exhchange
-    def execute({6, data}, state) do
-            
-    end
+   # send message to guest
+   def execute({6, data}, state) do
+        {user, msg} = Utils.parse_msg data    
+   end
 
-    # accept offer
+    # add good to exhchange
     def execute({7, data}, state) do
             
     end
 
-    # decline offer
+    # accept offer
     def execute({8, data}, state) do
-                
+            
     end
 
-    # send message to guest
+    # decline offer
     def execute({9, data}, state) do
-            
+                
     end
 
     # purge exchange
