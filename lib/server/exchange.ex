@@ -1,11 +1,13 @@
 defmodule Exchange.Exchange do
     use GenServer
     
-    def start_link(args) do
-        GenServer.start_link(__MODULE__, args)
+    def start_link({id, username}=args) do
+        IO.puts "Registered exchange: #{String.to_atom(id)}"
+        GenServer.start_link(__MODULE__, args, name: String.to_atom(id))
     end
 
     def init({id, username}) do
+
         {:ok, %{id: id, host: username, host_pid: nil, guests: [], goods: []}}
     end
 
@@ -17,7 +19,7 @@ defmodule Exchange.Exchange do
     def handle_call(:connect_host, from, state) do
         {pid, _tag} = from
         new_state = Map.put(state, :host_pid, pid)
-        {:reply, :ok, new_state}
+        {:reply, {:ok, "Host connected"}, new_state}
     end
 
 end

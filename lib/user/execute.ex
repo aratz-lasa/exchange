@@ -1,6 +1,7 @@
 defmodule Exchange.Execute do
     alias Exchange.Director
     alias Exchange.Execute.Utils
+    alias Exchange.Exchange, as: Xch 
     # sign-in
     def execute({1, data}, state) do
         Utils.execute_new_user(&Director.sign_in/1, data, state)
@@ -30,7 +31,8 @@ defmodule Exchange.Execute do
     
     # connect host to exchange
     def execute({5, data}, state) do
-            
+        Xch.connect_host(String.to_atom(data))
+        |> Utils.respond(state)
     end
 
     # add good to exhchange
