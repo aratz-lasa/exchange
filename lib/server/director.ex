@@ -54,9 +54,9 @@ defmodule Exchange.Director do
         username = Map.get(user, :username)
         {:ok, pid} = Exchanges.start_exchange({id, username})
         #TODO: check if it is correct Exchange creation
-        [id, username, pid]
+        a = [id, username]
             |> Exchange.to_struct
-            |>Storage.create_exchange
+            |> Storage.create_exchange
             |> reply(state)
     end
 

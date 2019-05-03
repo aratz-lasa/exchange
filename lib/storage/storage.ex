@@ -1,4 +1,5 @@
 defmodule Exchange.Storage do
+  require User
   alias :mnesia, as: Mnesia
 
     def search_username(%User{}=user) do
@@ -39,7 +40,7 @@ defmodule Exchange.Storage do
         end
       )
       case result do
-        :ok -> {:ok, "Exchanged created"}
+        :ok -> {:ok, exchange.id}
         _ -> {:error, "Failed to create exchange"}
       end
     end
