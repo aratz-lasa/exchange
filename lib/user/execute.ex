@@ -31,20 +31,22 @@ defmodule Exchange.Execute do
     
     # connect host to exchange
     def execute({5, data}, state) do
-        Xch.connect_host(String.to_atom(data))
-        |> Utils.respond(state)
+        exchange_id = String.to_atom(data)
+        host_name = String.to_atom Map.get(state, :user).username
+        Xch.connect_host(exchange_id, host_name)
+         |> Utils.respond(state)
     end
 
    # send message to guest
    def execute({6, data}, state) do
-    Utils.parse_exchange_msg(data)
+    Utils.parse_msg_to_guest(data)
      |> Xch.msg_to_guest
      |> Utils.respond(state)
    end
 
     # add good to exhchange
     def execute({7, data}, state) do
-            
+        
     end
 
     # accept offer
@@ -68,9 +70,12 @@ defmodule Exchange.Execute do
     end
 
     ## GUEST
-    # connect to exchange
+    # connect guest to exchange
     def execute({12, data}, state) do
-        
+        exchange = String.to_atom data
+        guest_name = String.to_atom Map.get(state, :user).username
+        Xch.connect_guest(exchange, guest_name)
+         |> Utils.respond(state)
     end
 
     # leave exchange

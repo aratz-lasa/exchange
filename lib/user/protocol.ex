@@ -22,4 +22,6 @@ defmodule Exchange.Protocol do
     define :sign_exchange, 4
     define :connect_host, 5
     define :msg_to_guest, 6
+
+    define :connect_guest, 12
 end

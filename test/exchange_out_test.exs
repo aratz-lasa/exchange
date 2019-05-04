@@ -11,7 +11,7 @@ defmodule ExchangeOut do
     port = Application.get_env(:exchange, :port)
     {:ok, socket} = :gen_tcp.connect('localhost', port, opts)
     # Sign in
-    sign_in(socket)
+    sign_in(socket, {"koln", "pass"})
     {:ok, socket: socket}
   end
 
@@ -28,20 +28,44 @@ defmodule ExchangeOut do
   end
 
   test "sign in exchange", state do
+    sign_exchange state
+  end
+
+  test "connect guest to exchange", state do
+    # sign exchange
+    exchange_id = sign_exchange state
+    # sign in guest
+    port = Application.get_env(:exchange, :port)
+    opts = [active: false]
+    {:ok, guest_socket} = :gen_tcp.connect('localhost', port, opts)
+    sign_in guest_socket, {"dortmund", "pass"}
+    # connect guest to exchange
+    opcode_out = Protocol.connect_guest
+    data_out = exchange_id
+    msg_out = <<opcode_out>> <> data_out
+    :ok = :gen_tcp.send(guest_socket, msg_out)
+    {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
+    [opcode_in | guest_id] = msg_in
+    assert opcode_in == 200
+  end
+
+  # Utils
+
+  def sign_exchange(state) do 
     socket = state[:socket]
     opcode_out = Protocol.sign_exchange
     data_out = ""
     msg_out = <<opcode_out>> <> data_out
     :ok = :gen_tcp.send(socket, msg_out)
     {:ok, msg_in} = :gen_tcp.recv(socket, 0)
-    [opcode_in | data_in] = msg_in
+    [opcode_in | exchange_id] = msg_in
     assert opcode_in == 200
+    to_string exchange_id
   end
 
-  # Utils
-  def sign_in(socket) do
+  def sign_in(socket, {user, pass}) do
     opcode_out = Protocol.sign_in
-    data_out = "koln#pass"
+    data_out = Enum.join([user, pass], "#")
     msg_out = <<opcode_out>> <> data_out
     :ok = :gen_tcp.send(socket, msg_out)
     {:ok, msg_in} = :gen_tcp.recv(socket, 0)
