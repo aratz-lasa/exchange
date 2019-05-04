@@ -5,15 +5,29 @@ defmodule Exchange.Execute.Utils do
             [username, password] -> 
                 User.to_struct(user)
                     |> fun.()
+                    |> check_regist_user(username)
                     |> respond {Map.put(state, :user, User.to_struct(user)), state}
             _ -> respond_error("Invalid input", state)
         end
     end
 
+    def check_regist_user(result, username) do
+        username = String.to_atom username
+        case result do
+            {:ok, data} -> 
+                if not is_nil Process.whereis(username) do
+                    Process.unregister(username)
+                end
+                Process.register self, username
+            _ ->
+        end
+        result
+    end
+
     def parse_exchange_msg(data) when is_binary(data) do
-        [exchange| rest_msg] = String.split(data, "#")
+        [exchange | rest_msg] = String.split(data, "#")
         [guest | msg] = rest_msg
-        {exchange, guest, to_string(msg)}
+        {String.to_atom(exchange), String.to_atom(guest), msg}
     end
 
     def respond(result, state) when not is_tuple(state) do

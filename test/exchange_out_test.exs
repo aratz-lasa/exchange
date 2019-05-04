@@ -3,6 +3,7 @@ defmodule ExchangeOut do
   doctest Exchange.Exchange
   
   alias Exchange.Start
+  alias Exchange.Protocol
   
   setup_all do
     Start.start_init_mnesia
@@ -17,7 +18,7 @@ defmodule ExchangeOut do
   
   test "log in", state do
     socket = state[:socket]
-    opcode_out = 2
+    opcode_out = Protocol.log_in
     data_out = "koln#pass"
     msg_out = <<opcode_out>> <> data_out
     :ok = :gen_tcp.send(socket, msg_out)
@@ -28,7 +29,7 @@ defmodule ExchangeOut do
 
   test "sign in exchange", state do
     socket = state[:socket]
-    opcode_out = 4
+    opcode_out = Protocol.sign_exchange
     data_out = ""
     msg_out = <<opcode_out>> <> data_out
     :ok = :gen_tcp.send(socket, msg_out)
@@ -39,7 +40,7 @@ defmodule ExchangeOut do
 
   # Utils
   def sign_in(socket) do
-    opcode_out = 1
+    opcode_out = Protocol.sign_in
     data_out = "koln#pass"
     msg_out = <<opcode_out>> <> data_out
     :ok = :gen_tcp.send(socket, msg_out)

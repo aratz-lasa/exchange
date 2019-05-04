@@ -37,9 +37,9 @@ defmodule Exchange.Execute do
 
    # send message to guest
    def execute({6, data}, state) do
-        Utils.parse_exchange_msg data
-         |> Xch.msg_to_guest
-         |> Utils.respond(state)
+    Utils.parse_exchange_msg(data)
+     |> Xch.msg_to_guest
+     |> Utils.respond(state)
    end
 
     # add good to exhchange
