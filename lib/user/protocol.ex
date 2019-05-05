@@ -1,22 +1,32 @@
 defmodule Exchange.Protocol do
     import Constants, only: :macros
     
-    @error_opcode 400
-    @ok_opcode 200
+    @ok_opcode 100
 
     def decode(msg) do
         <<opcode::8, data::bitstring>> = msg
         {opcode, data}
     end
 
-    def encode({:ok, data}) do
-        <<@ok_opcode::8>> <> data
+    def encode({:ok, data}, opcode \\ @ok_opcode) do
+        <<opcode::8>> <> data
     end
 
-    def encode({:error, data}) do
-        <<@error_opcode::8>> <> data
+    def encode({:error, data}, opcode) do
+        <<opcode+75::8>> <> data
     end
 
+    ## TCP Protocol
+    # Server - OK
+    define :ok_opcode, @ok_opcode
+    define :rcv_from_host, @ok_opcode + 1
+
+    # Server - ERROR
+    # All errors are the 'Correct Code' + 75
+    define :err_opcode, @ok_opcode + 75
+    define :err_rcv_from_host, rcv_from_host + 75
+
+    # User
     define :sign_in, 1
     define :log_in, 2
     define :sign_exchange, 4

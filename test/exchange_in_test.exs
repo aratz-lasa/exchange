@@ -3,7 +3,7 @@ defmodule ExchangeIn do
   doctest Exchange.Exchange
   
   alias Exchange.Start
-  alias Exchange.Protocol
+  alias Exchange.Protocol, as: Prot
 
   setup_all do
     Start.start_init_mnesia
@@ -24,14 +24,14 @@ defmodule ExchangeIn do
   test "connect host to exchange", state do
     socket = state[:socket]
     exchange_id = state[:exchange_id]
-    opcode_out = Protocol.connect_host
+    opcode_out = Prot.connect_host
     data_out = exchange_id
     msg_out = <<opcode_out>> <> data_out
     
     :ok = :gen_tcp.send(socket, msg_out)
     {:ok, msg_in} = :gen_tcp.recv(socket, 0)
     [opcode_in | data_in] = msg_in
-    assert opcode_in == 200
+    assert opcode_in == Prot.ok_opcode
   end
 
   test "send msg to guest", state do
@@ -40,7 +40,7 @@ defmodule ExchangeIn do
     guest_id = state[:guest_id]
     # send msg to guest
     socket = state[:socket]
-    opcode_out = Protocol.msg_to_guest
+    opcode_out = Prot.msg_to_guest
     msg = "test msg"
     guest_id = to_string guest_id
     data_out = Enum.join([exchange_id, guest_id, msg], "#")
@@ -49,11 +49,11 @@ defmodule ExchangeIn do
     # Check in hist socket
     {:ok, msg_in} = :gen_tcp.recv(socket, 0)
     [opcode_in | data_in] = msg_in
-    assert opcode_in == 200
+    assert opcode_in == Prot.ok_opcode
     # Check in guest socket
     {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
     [opcode_in | data_in] = msg_in
-    assert opcode_in == 200
+    assert opcode_in == Prot.rcv_from_host
     [from, what] = String.split(to_string(data_in), "#")
     assert from == exchange_id
     assert msg == what 
@@ -66,35 +66,35 @@ defmodule ExchangeIn do
     port = Application.get_env(:exchange, :port)
     {:ok, socket} = :gen_tcp.connect('localhost', port, opts)
     # Sign in
-    opcode_out = Protocol.sign_in
+    opcode_out = Prot.sign_in
     data_out = Enum.join([user, pass], "#")
     msg_out = <<opcode_out>> <> data_out
     :ok = :gen_tcp.send(socket, msg_out)
     {:ok, msg_in} = :gen_tcp.recv(socket, 0)
     [opcode_in | data_in] = msg_in
-    assert opcode_in == 200
+    assert opcode_in == Prot.ok_opcode
     socket
   end
 
   def connect_guest(socket, exchange_id) do
-    opcode_out = Protocol.connect_guest
+    opcode_out = Prot.connect_guest
     data_out = exchange_id
     msg_out = <<opcode_out>> <> data_out
     :ok = :gen_tcp.send(socket, msg_out)
     {:ok, msg_in} = :gen_tcp.recv(socket, 0)
     [opcode_in | guest_id] = msg_in
-    assert opcode_in == 200
+    assert opcode_in == Prot.ok_opcode
     guest_id
   end
 
   def sign_exchange(socket) do
-    opcode_out = Protocol.sign_exchange
+    opcode_out = Prot.sign_exchange
     data_out = ""
     msg_out = <<opcode_out>> <> data_out
     :ok = :gen_tcp.send(socket, msg_out)
     {:ok, msg_in} = :gen_tcp.recv(socket, 0)
     [opcode_in | exchange_id] = msg_in
-    assert opcode_in == 200
+    assert opcode_in == Prot.ok_opcode
     to_string exchange_id
   end
 end

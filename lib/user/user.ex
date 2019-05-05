@@ -43,7 +43,7 @@ defmodule Exchange.User do
 
     def handle_call({:receive_msg, exchange, msg}, from, state = %{socket: socket, transport: transport}) do
       response = {:ok, Enum.join([exchange, msg], "#")}
-                  |> Protocol.encode
+                  |> Protocol.encode(Protocol.rcv_from_host)
       Utils.log_msg_out response, state
       transport.send(socket, response)
       {:reply, {:ok, "Message sent"}, state}
