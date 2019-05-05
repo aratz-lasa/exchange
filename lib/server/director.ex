@@ -51,7 +51,7 @@ defmodule Exchange.Director do
     @impl true
     def handle_call({:sign_exchange, user}, _from, state) do
         id = Randomizer.generate!(20)
-        username = Map.get(user, :username)
+        username = user.username
         {:ok, pid} = Exchanges.start_exchange({id, username})
         #TODO: check if it is correct Exchange creation
         a = [id, username]

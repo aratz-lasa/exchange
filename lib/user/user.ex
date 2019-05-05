@@ -20,8 +20,8 @@ defmodule Exchange.User do
       :gen_server.enter_loop(__MODULE__, [], %{socket: socket, transport: transport})
     end
   
-    def receive_msg(name, {exchange, msg}) do
-      GenServer.call(name, {:receive_msg, exchange, msg})
+    def receive_msg(name, {msg, opcode}) do
+      GenServer.call(name, {:receive_msg, msg, opcode})
     end
     # Callbacks
     def handle_info({:tcp, _socket, msg}, state = %{socket: socket, transport: transport}) do
@@ -41,9 +41,8 @@ defmodule Exchange.User do
       {:stop, :normal, state}
     end
 
-    def handle_call({:receive_msg, exchange, msg}, from, state = %{socket: socket, transport: transport}) do
-      response = {:ok, Enum.join([exchange, msg], "#")}
-                  |> Protocol.encode(Protocol.rcv_from_host)
+    def handle_call({:receive_msg, msg, opcode}, from, state = %{socket: socket, transport: transport}) do
+      response = Protocol.encode(msg, opcode)
       Utils.log_msg_out response, state
       transport.send(socket, response)
       {:reply, {:ok, "Message sent"}, state}

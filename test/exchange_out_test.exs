@@ -31,6 +31,21 @@ defmodule ExchangeOut do
     sign_exchange state
   end
 
+  test "connect host to exchange", state do
+    # sign exchange
+    exchange_id = sign_exchange state
+    
+    socket = state[:socket]
+    opcode_out = Prot.connect_host
+    data_out = exchange_id
+    msg_out = <<opcode_out>> <> data_out
+    
+    :ok = :gen_tcp.send(socket, msg_out)
+    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
+    [opcode_in | data_in] = msg_in
+    assert opcode_in == Prot.ok_opcode
+  end
+
   test "connect guest to exchange", state do
     # sign exchange
     exchange_id = sign_exchange state
@@ -47,10 +62,14 @@ defmodule ExchangeOut do
     {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
     [opcode_in | guest_id] = msg_in
     assert opcode_in == Prot.ok_opcode
+    # Check in host notification
+    socket = state[:socket]
+    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
+    [opcode_in | guest_id] = msg_in
+    assert opcode_in == Prot.guest_connected
   end
 
   # Utils
-
   def sign_exchange(state) do 
     socket = state[:socket]
     opcode_out = Prot.sign_exchange

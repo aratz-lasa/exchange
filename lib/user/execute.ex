@@ -32,7 +32,7 @@ defmodule Exchange.Execute do
     # connect host to exchange
     def execute({5, data}, state) do
         exchange_id = String.to_atom(data)
-        host_name = String.to_atom Map.get(state, :user).username
+        host_name = Map.get(state, :user).username
         Xch.connect_host(exchange_id, host_name)
          |> Utils.respond(state)
     end
@@ -73,7 +73,7 @@ defmodule Exchange.Execute do
     # connect guest to exchange
     def execute({12, data}, state) do
         exchange = String.to_atom data
-        guest_name = String.to_atom Map.get(state, :user).username
+        guest_name = Map.get(state, :user).username
         Xch.connect_guest(exchange, guest_name)
          |> Utils.respond(state)
     end
