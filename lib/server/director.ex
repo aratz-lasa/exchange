@@ -2,6 +2,7 @@ defmodule Exchange.Director do
     use GenServer
     alias Exchange.Storage
     alias Exchange.Supervisor.Exchanges
+    import Exchange.Server.Utils
 
     def start_link(_args) do
         GenServer.start_link(__MODULE__, [], name: :director)
@@ -54,13 +55,9 @@ defmodule Exchange.Director do
         username = user.username
         {:ok, pid} = Exchanges.start_exchange({id, username})
         #TODO: check if it is correct Exchange creation
-        a = [id, username]
+        [id, username]
             |> Exchange.to_struct
             |> Storage.create_exchange
             |> reply(state)
-    end
-
-    def reply(response, state) do
-        {:reply, response, state}
     end
 end

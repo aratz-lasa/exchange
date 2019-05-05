@@ -2,6 +2,7 @@ defmodule Exchange.Exchange do
     use GenServer
     alias Exchange.User
     alias Exchange.Protocol, as: Prot
+    import Exchange.Server.Utils
         
     def start_link({id, host}=args) do
         args = {String.to_atom(id), String.to_atom(host)}
@@ -59,25 +60,5 @@ defmodule Exchange.Exchange do
             User.receive_msg(host, {msg, Prot.guest_connected})
             reply_ok(guest_id, new_state)
         end
-    end
-
-    # Utils
-
-    def check_banned(guest, state) do
-        state
-         |> Map.get(:banned)
-         |> MapSet.member?(guest)
-    end
-
-    def reply_error(response, state) do
-        reply({:error, response}, state)
-    end
-
-    def reply_ok(response, state) do
-        reply({:ok, response}, state)
-    end
-
-    def reply(response, state) do
-        {:reply, response, state}
     end
 end
