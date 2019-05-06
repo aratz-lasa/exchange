@@ -48,12 +48,14 @@ defmodule Exchange.Exchange do
         end
     end
 
-    def handle_call({:ban_guest, guest_id}, _from, state = %{id: id, ids_guests: ids_guests}) do
+    def handle_call({:ban_guest, guest_id}, _from, state = %{id: id, ids_guests: ids_guests, banned: banned}) do
         guest = Map.get(ids_guests, guest_id)
         if guest != nil do
             response = msg_ok_user(Atom.to_string(id))
+            new_banned = MapSet.put(banned, guest)
+            new_state = Map.put(state, :banned, new_banned)
             User.receive_msg(guest, {response, Prot.guest_purged})
-             |> reply(state)
+             |> reply(new_state)
         else
            reply_error("Invalid guest", state) 
         end
