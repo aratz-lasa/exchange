@@ -29,7 +29,6 @@ defmodule ExchangeInHost do
     socket = state[:socket]
     opcode_out = Prot.msg_to_guest
     msg = "test msg"
-    guest_id = guest_id
     data_out = Enum.join([exchange_id, guest_id, msg], "#")
     msg_out = <<opcode_out>> <> data_out
     :ok = :gen_tcp.send(socket, msg_out)
@@ -53,7 +52,6 @@ defmodule ExchangeInHost do
     # purge guest
     socket = state[:socket]
     opcode_out = Prot.purge_guest
-    guest_id = guest_id
     data_out = Enum.join([exchange_id, guest_id], "#")
     msg_out = <<opcode_out>> <> data_out
     :ok = :gen_tcp.send(socket, msg_out)
