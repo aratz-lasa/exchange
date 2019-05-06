@@ -15,7 +15,7 @@ defmodule Exchange.MixProject do
   def application do
     [
       mod: {Exchange.Start, []},
-      extra_applications: [:logger],
+      extra_applications: [:logger]
     ]
   end
 
