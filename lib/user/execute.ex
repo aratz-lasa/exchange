@@ -75,14 +75,17 @@ defmodule Exchange.Execute do
     # connect guest to exchange
     def execute({12, data}, state) do
         exchange = String.to_atom data
-        guest_name = Map.get(state, :user).username
-        Xch.connect_guest(exchange, guest_name)
+        guest = Map.get(state, :user).username
+        Xch.connect_guest(exchange, guest)
          |> respond(state)
     end
 
-    # leave exchange
+    # disconnect guest from exchange
     def execute({13, data}, state) do
-            
+        exchange = String.to_atom data
+        guest = Map.get(state, :user).username
+        Xch.disconnect_guest(exchange, guest)
+         |> respond(state)
     end
 
     # get exchange goods

@@ -12,8 +12,8 @@ defmodule Exchange.Exchange do
     def init({id, host}) do
         {:ok, %{id: id, host: host, ids_guests: %{}, guests_ids: %{}, goods: [], banned: MapSet.new()}}
     end
-
-    # Host API
+    ## API
+    # Host
     def connect_host(id, host) do
         GenServer.call(id, {:connect_host, String.to_atom(host)})
     end
@@ -26,12 +26,17 @@ defmodule Exchange.Exchange do
         GenServer.call(id, {:ban_guest, guest_id})
     end
 
-    # Guest API
+    # Guest
     def connect_guest(id, guest) do
         GenServer.call(id, {:connect_guest, String.to_atom(guest)})
     end
 
-    # Callbacks
+    def disconnect_guest(id, guest) do
+        GenServer.call(id, {:disconnect_guest, String.to_atom(guest)})
+    end
+
+    ## Callbacks
+    # Host
     def handle_call({:connect_host, host}, _from, state) do
         new_state = Map.put(state, :host, host)
         reply_ok("Host connected", new_state)
@@ -61,6 +66,7 @@ defmodule Exchange.Exchange do
         end
     end
 
+    # Guest
     def handle_call({:connect_guest, guest}, _from, %{id: id, host: host}=state) do
         if check_banned(guest, state) do
           reply_error("Banned guest", state)
@@ -72,9 +78,25 @@ defmodule Exchange.Exchange do
                             |> Map.put(guest_id, guest)
             new_state = Map.put(state, :guests_ids, new_guests_ids) 
                          |> Map.put(:ids_guests, new_ids_guests)
-            msg = {:ok, Enum.join([id, guest_id], "#")}
+            msg = msg_ok_user(Enum.join([id, guest_id], "#"))
             User.receive_msg(host, {msg, Prot.guest_connected})
             reply_ok(guest_id, new_state)
+        end
+    end
+
+    def handle_call({:disconnect_guest, guest}, _from, %{id: id, host: host, guests_ids: guests_ids, ids_guests: ids_guests}=state) do
+        guest_id = Map.get(guests_ids, guest)
+        if guest_id != nil do
+            new_ids_guests = Map.delete(ids_guests, guest_id)
+            new_guests_ids = Map.delete(guests_ids, guest)
+            new_state = state
+                         |> Map.put(:guests_ids, new_guests_ids)
+                         |> Map.put(:ids_guests, new_ids_guests)
+            msg = msg_ok_user(Enum.join([id, guest_id], "#"))
+            User.receive_msg(host, {msg, Prot.guest_disconnected})
+            reply_ok(guest_id, new_state)
+        else
+            reply_error("Already disconnected", state) 
         end
     end
 end

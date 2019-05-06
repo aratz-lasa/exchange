@@ -1,4 +1,4 @@
-defmodule ExchangeIn do
+defmodule ExchangeInGuest do
   use ExUnit.Case
   doctest Exchange.Exchange
   
@@ -6,8 +6,7 @@ defmodule ExchangeIn do
   alias Exchange.Protocol, as: Prot
 
   setup_all do
-    Start.start_init_mnesia
-    
+    Start.start_init_mnesia   
     # Sign in
     socket = sign_in("koln", "pass")
     # Create exchange
@@ -22,51 +21,28 @@ defmodule ExchangeIn do
      exchange_id: exchange_id, guest_id: guest_id}
   end
 
-  test "send msg to guest", state do
+  test "disconnect guest", state do
     guest_socket = state[:guest_socket]
     exchange_id = state[:exchange_id]
     guest_id = state[:guest_id]
-    # send msg to guest
-    socket = state[:socket]
-    opcode_out = Prot.msg_to_guest
-    msg = "test msg"
-    guest_id = guest_id
-    data_out = Enum.join([exchange_id, guest_id, msg], "#")
+    # disconnect guest
+    opcode_out = Prot.disconnect_guest
+    data_out = exchange_id
     msg_out = <<opcode_out>> <> data_out
-    :ok = :gen_tcp.send(socket, msg_out)
-    # Check in host socket
-    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
-    [opcode_in | data_in] = msg_in
-    assert opcode_in == Prot.ok_opcode
+    :ok = :gen_tcp.send(guest_socket, msg_out)
     # Check in guest socket
     {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
     [opcode_in | data_in] = msg_in
-    assert opcode_in == Prot.rcv_from_host
+    assert opcode_in == Prot.ok_opcode
+    # Check in host socket
+    socket = state[:socket]
+    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
+    [opcode_in | data_in] = msg_in
+    assert opcode_in == Prot.guest_disconnected
     [from, what] = String.split(to_string(data_in), "#")
     assert from == exchange_id
-    assert msg == what 
-  end
+    assert what == guest_id 
 
-  test "purge guest from exchange", state do
-    guest_socket = state[:guest_socket]
-    exchange_id = state[:exchange_id]
-    guest_id = state[:guest_id]
-    # purge guest
-    socket = state[:socket]
-    opcode_out = Prot.purge_guest
-    guest_id = guest_id
-    data_out = Enum.join([exchange_id, guest_id], "#")
-    msg_out = <<opcode_out>> <> data_out
-    :ok = :gen_tcp.send(socket, msg_out)
-    # Check in host socket
-    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
-    [opcode_in | data_in] = msg_in
-    assert opcode_in == Prot.ok_opcode
-    # Check in guest socket
-    {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
-    [opcode_in | from] = msg_in
-    assert opcode_in == Prot.guest_purged
-    assert exchange_id == to_string(from)
   end
 
   # Utils
