@@ -1,15 +1,15 @@
 defmodule Exchange.Execute do
     alias Exchange.Director
-    alias Exchange.Execute.Utils
+    import Exchange.Execute.Utils
     alias Exchange.Exchange, as: Xch 
     # sign-in
     def execute({1, data}, state) do
-        Utils.execute_new_user(&Director.sign_in/1, data, state)
+        execute_new_user(&Director.sign_in/1, data, state)
     end
     
     # log-in
     def execute({2, data}, state) do
-        Utils.execute_new_user(&Director.log_in/1, data, state)
+        execute_new_user(&Director.log_in/1, data, state)
     end
 
     # retrieve unread data
@@ -23,25 +23,25 @@ defmodule Exchange.Execute do
         if Map.has_key?(state, :user) do
             Map.get(state, :user)
              |> Director.sign_exchange
-             |> Utils.respond(state)
+             |> respond(state)
         else
-            Utils.respond_error("Not logged in", state)
+            respond_error("Not logged in", state)
         end
     end
     
     # connect host to exchange
     def execute({5, data}, state) do
-        exchange_id = String.to_atom(data)
+        exchange = String.to_atom(data)
         host_name = Map.get(state, :user).username
-        Xch.connect_host(exchange_id, host_name)
-         |> Utils.respond(state)
+        Xch.connect_host(exchange, host_name)
+         |> respond(state)
     end
 
    # send message to guest
    def execute({6, data}, state) do
-    Utils.parse_msg_to_guest(data)
-     |> Xch.msg_to_guest
-     |> Utils.respond(state)
+    {exchange, guest_id, msg} = parse_msg_to_guest(data)
+    response = Xch.msg_to_guest(exchange, {guest_id, msg})
+    respond(response, state)
    end
 
     # add good to exhchange
@@ -61,12 +61,14 @@ defmodule Exchange.Execute do
 
     # purge exchange
     def execute({10, data}, state) do
-            
+        
     end
 
     # purge guest from exchange
     def execute({11, data}, state) do
-            
+        [exchange, guest_id] = String.split(data, "#")
+        Xch.ban_guest(String.to_atom(exchange), guest_id)
+         |> respond(state)
     end
 
     ## GUEST
@@ -75,7 +77,7 @@ defmodule Exchange.Execute do
         exchange = String.to_atom data
         guest_name = Map.get(state, :user).username
         Xch.connect_guest(exchange, guest_name)
-         |> Utils.respond(state)
+         |> respond(state)
     end
 
     # leave exchange

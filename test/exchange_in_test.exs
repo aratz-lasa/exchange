@@ -30,7 +30,7 @@ defmodule ExchangeIn do
     socket = state[:socket]
     opcode_out = Prot.msg_to_guest
     msg = "test msg"
-    guest_id = to_string guest_id
+    guest_id = guest_id
     data_out = Enum.join([exchange_id, guest_id, msg], "#")
     msg_out = <<opcode_out>> <> data_out
     :ok = :gen_tcp.send(socket, msg_out)
@@ -45,6 +45,28 @@ defmodule ExchangeIn do
     [from, what] = String.split(to_string(data_in), "#")
     assert from == exchange_id
     assert msg == what 
+  end
+
+  test "purge guest from exchange", state do
+    guest_socket = state[:guest_socket]
+    exchange_id = state[:exchange_id]
+    guest_id = state[:guest_id]
+    # purge guest
+    socket = state[:socket]
+    opcode_out = Prot.purge_guest
+    guest_id = guest_id
+    data_out = Enum.join([exchange_id, guest_id], "#")
+    msg_out = <<opcode_out>> <> data_out
+    :ok = :gen_tcp.send(socket, msg_out)
+    # Check in host socket
+    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
+    [opcode_in | data_in] = msg_in
+    assert opcode_in == Prot.ok_opcode
+    # Check in guest socket
+    {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
+    [opcode_in | from] = msg_in
+    assert opcode_in == Prot.guest_purged
+    assert exchange_id == to_string(from)
   end
 
   # Utils
@@ -72,7 +94,7 @@ defmodule ExchangeIn do
     {:ok, msg_in} = :gen_tcp.recv(socket, 0)
     [opcode_in | guest_id] = msg_in
     assert opcode_in == Prot.ok_opcode
-    guest_id
+    to_string guest_id
   end
 
   def sign_exchange(socket) do

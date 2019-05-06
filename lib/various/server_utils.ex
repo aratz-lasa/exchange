@@ -16,4 +16,12 @@ defmodule Exchange.Server.Utils do
     def reply(response, state) do
         {:reply, response, state}
     end
+
+    def msg_ok_user(response) do
+        {:ok, response}
+    end
+
+    def msg_error_user(response) do
+        {:error, response}
+    end
 end

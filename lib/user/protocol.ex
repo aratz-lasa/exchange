@@ -21,12 +21,14 @@ defmodule Exchange.Protocol do
     define :ok_opcode, @ok_opcode
     define :rcv_from_host, @ok_opcode + 1
     define :guest_connected, @ok_opcode + 2
+    define :guest_purged, @ok_opcode + 3
 
     # Server - ERROR
     # All errors are the 'Correct Code' + 75
     define :err_opcode, @ok_opcode + 75
     define :err_rcv_from_host, rcv_from_host + 75
     define :err_guest_connected, guest_connected + 75
+    define :err_guest_purged, guest_purged + 75
 
     # User
     define :sign_in, 1
@@ -35,5 +37,6 @@ defmodule Exchange.Protocol do
     define :connect_host, 5
     define :msg_to_guest, 6
 
+    define :purge_guest, 11
     define :connect_guest, 12
 end

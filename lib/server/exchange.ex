@@ -18,13 +18,17 @@ defmodule Exchange.Exchange do
         GenServer.call(id, {:connect_host, String.to_atom(host)})
     end
 
-    def msg_to_guest({exchange, guest_id, msg}) do
-        GenServer.call(exchange, {:msg_to_guest, guest_id, msg})
+    def msg_to_guest(id, {guest_id, msg}) do
+        GenServer.call(id, {:msg_to_guest, guest_id, msg})
+    end
+
+    def ban_guest(id, guest_id) do
+        GenServer.call(id, {:ban_guest, guest_id})
     end
 
     # Guest API
-    def connect_guest(exchange, guest) do
-        GenServer.call(exchange, {:connect_guest, String.to_atom(guest)})
+    def connect_guest(id, guest) do
+        GenServer.call(id, {:connect_guest, String.to_atom(guest)})
     end
 
     # Callbacks
@@ -36,8 +40,19 @@ defmodule Exchange.Exchange do
     def handle_call({:msg_to_guest, guest_id, msg}, _from, state = %{id: id, ids_guests: ids_guests}) do
         guest = Map.get(ids_guests, guest_id)
         if guest != nil do
-            response = {:ok, Enum.join([id, msg], "#")}
+            response = msg_ok_user(Enum.join([id, msg], "#"))
             User.receive_msg(guest, {response, Prot.rcv_from_host})
+             |> reply(state)
+        else
+           reply_error("Invalid guest", state) 
+        end
+    end
+
+    def handle_call({:ban_guest, guest_id}, _from, state = %{id: id, ids_guests: ids_guests}) do
+        guest = Map.get(ids_guests, guest_id)
+        if guest != nil do
+            response = msg_ok_user(Atom.to_string(id))
+            User.receive_msg(guest, {response, Prot.guest_purged})
              |> reply(state)
         else
            reply_error("Invalid guest", state) 
@@ -56,7 +71,6 @@ defmodule Exchange.Exchange do
             new_state = Map.put(state, :guests_ids, new_guests_ids) 
                          |> Map.put(:ids_guests, new_ids_guests)
             msg = {:ok, Enum.join([id, guest_id], "#")}
-            IO.puts "Sent Notification to Host: #{host}"
             User.receive_msg(host, {msg, Prot.guest_connected})
             reply_ok(guest_id, new_state)
         end
