@@ -23,6 +23,7 @@ defmodule Exchange.Protocol do
   define(:guest_connected, @ok_opcode + 2)
   define(:guest_disconnected, @ok_opcode + 3)
   define(:guest_purged, @ok_opcode + 4)
+  define(:rcv_from_guest, @ok_opcode + 5)
 
   # Server - ERROR
   # All errors are the 'Correct Code' + 75
@@ -31,6 +32,7 @@ defmodule Exchange.Protocol do
   define(:err_guest_connected, guest_connected + 75)
   define(:err_guest_disconnected, guest_disconnected + 75)
   define(:err_guest_purged, guest_purged + 75)
+  define(:err_rcv_from_guest, rcv_from_guest + 75)
 
   # User
   define(:sign_in, 1)
@@ -42,4 +44,5 @@ defmodule Exchange.Protocol do
   define(:purge_guest, 11)
   define(:connect_guest, 12)
   define(:disconnect_guest, 13)
+  define(:msg_to_host, 16)
 end

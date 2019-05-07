@@ -9,18 +9,22 @@ defmodule ExchangeInGuest do
     Start.start_init_mnesia()
     # Sign in
     socket = sign_in("koln", "pass")
-    # Create exchange
-    exchange_id = sign_exchange(socket)
     # Create guest 
     guest_socket = sign_in("dortmund", "pass")
-    # Connect guest
-    guest_id = connect_guest(guest_socket, exchange_id)
-    # For reading guest connection  to Exchange
-    :gen_tcp.recv(socket, 0)
-
     {:ok,
-     socket: socket, guest_socket: guest_socket, exchange_id: exchange_id, guest_id: guest_id}
+     socket: socket, guest_socket: guest_socket}
   end
+
+  setup state do
+    guest_socket = state[:guest_socket]
+    exchange_id = state[:exchange_id]
+    socket = state[:socket]
+    # Create new Exchange
+    exchange_id = sign_exchange(socket)
+    # Connect guest to exchange
+    guest_id = connect_guest(socket, guest_socket, exchange_id)
+    {:ok, guest_id: guest_id, exchange_id: exchange_id }
+  end 
 
   test "disconnect guest", state do
     guest_socket = state[:guest_socket]
@@ -40,9 +44,34 @@ defmodule ExchangeInGuest do
     {:ok, msg_in} = :gen_tcp.recv(socket, 0)
     [opcode_in | data_in] = msg_in
     assert opcode_in == Prot.guest_disconnected()
-    [from, what] = String.split(to_string(data_in), "#")
+    [from, who] = String.split(to_string(data_in), "#")
     assert from == exchange_id
-    assert what == guest_id
+    assert who == guest_id
+  end
+
+  test "send msg to host", state do
+    guest_socket = state[:guest_socket]
+    exchange_id = state[:exchange_id]
+    guest_id = state[:guest_id]
+    # disconnect guest
+    opcode_out = Prot.msg_to_host()
+    msg = "test message"
+    data_out = Enum.join([exchange_id, msg], "#")
+    msg_out = <<opcode_out>> <> data_out
+    :ok = :gen_tcp.send(guest_socket, msg_out)
+    # Check in guest socket
+    {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
+    [opcode_in | data_in] = msg_in
+    assert opcode_in == Prot.ok_opcode()
+    # Check in host socket
+    socket = state[:socket]
+    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
+    [opcode_in | data_in] = msg_in
+    assert opcode_in == Prot.rcv_from_guest()
+    [from, who, what] = String.split(to_string(data_in), "#")
+    assert from == exchange_id
+    assert who == guest_id
+    assert what == msg
   end
 
   # Utils
@@ -62,15 +91,25 @@ defmodule ExchangeInGuest do
     socket
   end
 
-  def connect_guest(socket, exchange_id) do
+  def connect_guest(socket, guest_socket, exchange_id) do
     opcode_out = Prot.connect_guest()
     data_out = exchange_id
     msg_out = <<opcode_out>> <> data_out
-    :ok = :gen_tcp.send(socket, msg_out)
-    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
+    :ok = :gen_tcp.send(guest_socket, msg_out)
+    # Check in guest
+    {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
     [opcode_in | guest_id] = msg_in
     assert opcode_in == Prot.ok_opcode()
-    to_string(guest_id)
+    guest_id = to_string(guest_id)
+
+    # Check in host 
+    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
+    [opcode_in | data_in ] = msg_in
+    [from, who] = String.split(to_string(data_in), "#")
+    assert opcode_in == Prot.guest_connected()
+    assert from == exchange_id
+    assert who == guest_id
+    guest_id
   end
 
   def sign_exchange(socket) do

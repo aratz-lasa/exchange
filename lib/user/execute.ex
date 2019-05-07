@@ -70,9 +70,9 @@ defmodule Exchange.Execute do
 
   ## GUEST
   # connect guest to exchange
-  def execute({12, data}, state) do
+  def execute({12, data}, %{user: user}=state) do
     exchange = String.to_atom(data)
-    guest = Map.get(state, :user).username
+    guest = user.username
 
     Xch.connect_guest(exchange, guest)
     |> respond(state)
@@ -96,6 +96,10 @@ defmodule Exchange.Execute do
   end
 
   # send message to host
-  def execute({16, data}, state) do
+  def execute({16, data}, %{user: user}=state) do
+    [exchange, msg] = String.split(data, "#")
+    guest = user.username
+    Xch.msg_to_host(String.to_atom(exchange), guest, msg)
+    |> respond(state)
   end
 end
