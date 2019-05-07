@@ -60,8 +60,16 @@ defmodule Exchange.Execute do
   def execute({10, data}, state) do
   end
 
-  # purge guest from exchange
+  # ban guest from exchange
   def execute({11, data}, state) do
+    [exchange, guest_id] = String.split(data, "#")
+
+    Xch.ban_guest(String.to_atom(exchange), guest_id)
+    |> respond(state)
+  end
+
+  # unban guest from exchange
+  def execute({12, data}, state) do
     [exchange, guest_id] = String.split(data, "#")
 
     Xch.ban_guest(String.to_atom(exchange), guest_id)
@@ -70,7 +78,7 @@ defmodule Exchange.Execute do
 
   ## GUEST
   # connect guest to exchange
-  def execute({12, data}, %{user: user}=state) do
+  def execute({30, data}, %{user: user}=state) do
     exchange = String.to_atom(data)
     guest = user.username
 
@@ -79,7 +87,7 @@ defmodule Exchange.Execute do
   end
 
   # disconnect guest from exchange
-  def execute({13, data}, state) do
+  def execute({31, data}, state) do
     exchange = String.to_atom(data)
     guest = Map.get(state, :user).username
 
@@ -88,15 +96,15 @@ defmodule Exchange.Execute do
   end
 
   # get exchange goods
-  def execute({14, data}, state) do
+  def execute({32, data}, state) do
   end
 
   # send offer to host
-  def execute({15, data}, state) do
+  def execute({34, data}, state) do
   end
 
   # send message to host
-  def execute({16, data}, %{user: user}=state) do
+  def execute({35, data}, %{user: user}=state) do
     [exchange, msg] = String.split(data, "#")
     guest = user.username
     Xch.msg_to_host(String.to_atom(exchange), guest, msg)

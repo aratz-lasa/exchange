@@ -22,7 +22,7 @@ defmodule Exchange.Protocol do
   define(:rcv_from_host, @ok_opcode + 1)
   define(:guest_connected, @ok_opcode + 2)
   define(:guest_disconnected, @ok_opcode + 3)
-  define(:guest_purged, @ok_opcode + 4)
+  define(:guest_banned, @ok_opcode + 4)
   define(:rcv_from_guest, @ok_opcode + 5)
 
   # Server - ERROR
@@ -31,7 +31,7 @@ defmodule Exchange.Protocol do
   define(:err_rcv_from_host, rcv_from_host + 75)
   define(:err_guest_connected, guest_connected + 75)
   define(:err_guest_disconnected, guest_disconnected + 75)
-  define(:err_guest_purged, guest_purged + 75)
+  define(:err_guest_banned, guest_banned + 75)
   define(:err_rcv_from_guest, rcv_from_guest + 75)
 
   # User
@@ -40,9 +40,9 @@ defmodule Exchange.Protocol do
   define(:sign_exchange, 4)
   define(:connect_host, 5)
   define(:msg_to_guest, 6)
+  define(:ban_guest, 11)
 
-  define(:purge_guest, 11)
-  define(:connect_guest, 12)
-  define(:disconnect_guest, 13)
-  define(:msg_to_host, 16)
+  define(:connect_guest, 30)
+  define(:disconnect_guest, 31)
+  define(:msg_to_host, 35)
 end

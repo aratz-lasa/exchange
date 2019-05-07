@@ -50,13 +50,13 @@ defmodule ExchangeInHost do
     assert msg == what
   end
 
-  test "purge guest from exchange", state do
+  test "ban guest from exchange", state do
     guest_socket = state[:guest_socket]
     exchange_id = state[:exchange_id]
     guest_id = state[:guest_id]
-    # purge guest
+    # ban guest
     socket = state[:socket]
-    opcode_out = Prot.purge_guest()
+    opcode_out = Prot.ban_guest()
     data_out = Enum.join([exchange_id, guest_id], "#")
     msg_out = <<opcode_out>> <> data_out
     :ok = :gen_tcp.send(socket, msg_out)
@@ -67,7 +67,7 @@ defmodule ExchangeInHost do
     # Check in guest socket
     {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
     [opcode_in | from] = msg_in
-    assert opcode_in == Prot.guest_purged()
+    assert opcode_in == Prot.guest_banned()
     assert exchange_id == to_string(from)
   end
 

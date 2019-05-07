@@ -78,7 +78,7 @@ defmodule Exchange.Exchange do
       new_state = delete_guest(guest, state)
                   |> Map.put(:banned, new_banned)
       response = msg_ok_user(Atom.to_string(id))
-      User.receive_msg(guest, {response, Prot.guest_purged()})
+      User.receive_msg(guest, {response, Prot.guest_banned})
       |> reply(new_state)
     else
       reply_error("Invalid guest", state)
