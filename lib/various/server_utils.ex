@@ -5,13 +5,17 @@ defmodule Exchange.Server.Utils do
     |> MapSet.member?(guest)
   end
 
-  def delete_guest(guest, %{ids_guests: ids_guests, guests_ids: guests_ids}=state) do
+  def delete_guest(guest, %{ids_guests: ids_guests, guests_ids: guests_ids} = state) do
     guest_id = Map.get(guests_ids, guest)
+
     if guest_id != nil do
       new_guests_ids = Map.delete(guests_ids, guest)
       new_ids_guests = Map.delete(ids_guests, guest_id)
-      new_state = Map.put(state, :guests_ids, new_guests_ids)
-                  |> Map.put(:ids_guests, new_ids_guests)
+
+      new_state =
+        Map.put(state, :guests_ids, new_guests_ids)
+        |> Map.put(:ids_guests, new_ids_guests)
+
       new_state
     else
       state

@@ -53,8 +53,8 @@ defmodule Exchange.Exchange do
         _from,
         state = %{id: id, ids_guests: ids_guests}
       ) do
-        IO.puts "#{inspect ids_guests}"
-        guest = Map.get(ids_guests, guest_id)
+    IO.puts("#{inspect(ids_guests)}")
+    guest = Map.get(ids_guests, guest_id)
 
     if guest != nil do
       response = msg_ok_user(Enum.join([id, msg], "#"))
@@ -75,10 +75,14 @@ defmodule Exchange.Exchange do
 
     if guest != nil do
       new_banned = MapSet.put(banned, guest)
-      new_state = delete_guest(guest, state)
-                  |> Map.put(:banned, new_banned)
+
+      new_state =
+        delete_guest(guest, state)
+        |> Map.put(:banned, new_banned)
+
       response = msg_ok_user(Atom.to_string(id))
-      User.receive_msg(guest, {response, Prot.guest_banned})
+
+      User.receive_msg(guest, {response, Prot.guest_banned()})
       |> reply(new_state)
     else
       reply_error("Invalid guest", state)
@@ -90,7 +94,8 @@ defmodule Exchange.Exchange do
     if check_banned(guest, state) do
       reply_error("Banned guest", state)
     else
-      state = delete_guest(guest, state) # Idempotence
+      # Idempotence
+      state = delete_guest(guest, state)
       guest_id = Randomizer.generate!(20)
 
       new_guests_ids =
@@ -116,7 +121,7 @@ defmodule Exchange.Exchange do
         _from,
         %{id: id, host: host, guests_ids: guests_ids, ids_guests: ids_guests} = state
       ) do
-        guest_id = Map.get(guests_ids, guest)
+    guest_id = Map.get(guests_ids, guest)
 
     if guest_id != nil do
       new_ids_guests = Map.delete(ids_guests, guest_id)
@@ -131,13 +136,19 @@ defmodule Exchange.Exchange do
       User.receive_msg(host, {msg, Prot.guest_disconnected()})
       reply_ok(to_string(id), new_state)
     else
-      reply_ok(to_string(id), state) # Idempotence
+      # Idempotence
+      reply_ok(to_string(id), state)
     end
   end
 
-  def handle_call({:msg_to_host, guest, msg}, _from, %{id: id, host: host, guests_ids: guests_ids}=state) do
-    IO.puts "#{inspect guests_ids}"
+  def handle_call(
+        {:msg_to_host, guest, msg},
+        _from,
+        %{id: id, host: host, guests_ids: guests_ids} = state
+      ) do
+    IO.puts("#{inspect(guests_ids)}")
     guest_id = Map.get(guests_ids, guest)
+
     if guest_id != nil do
       msg = msg_ok_user(Enum.join([id, guest_id, msg], "#"))
       User.receive_msg(host, {msg, Prot.rcv_from_guest()})

@@ -11,8 +11,7 @@ defmodule ExchangeInGuest do
     socket = sign_in("koln", "pass")
     # Create guest 
     guest_socket = sign_in("dortmund", "pass")
-    {:ok,
-     socket: socket, guest_socket: guest_socket}
+    {:ok, socket: socket, guest_socket: guest_socket}
   end
 
   setup state do
@@ -23,8 +22,8 @@ defmodule ExchangeInGuest do
     exchange_id = sign_exchange(socket)
     # Connect guest to exchange
     guest_id = connect_guest(socket, guest_socket, exchange_id)
-    {:ok, guest_id: guest_id, exchange_id: exchange_id }
-  end 
+    {:ok, guest_id: guest_id, exchange_id: exchange_id}
+  end
 
   test "disconnect guest", state do
     guest_socket = state[:guest_socket]
@@ -104,7 +103,7 @@ defmodule ExchangeInGuest do
 
     # Check in host 
     {:ok, msg_in} = :gen_tcp.recv(socket, 0)
-    [opcode_in | data_in ] = msg_in
+    [opcode_in | data_in] = msg_in
     [from, who] = String.split(to_string(data_in), "#")
     assert opcode_in == Prot.guest_connected()
     assert from == exchange_id
