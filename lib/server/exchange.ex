@@ -28,6 +28,10 @@ defmodule Exchange.Exchange do
     GenServer.call(id, {:ban_guest, guest_id})
   end
 
+  def add_good(id, %Good{} = good) do
+    GenServer.call(id, {:add_good, good})
+  end
+
   # Guest
   def connect_guest(id, guest) do
     GenServer.call(id, {:connect_guest, String.to_atom(guest)})
@@ -53,7 +57,6 @@ defmodule Exchange.Exchange do
         _from,
         state = %{id: id, ids_guests: ids_guests}
       ) do
-    IO.puts("#{inspect(ids_guests)}")
     guest = Map.get(ids_guests, guest_id)
 
     if guest != nil do
@@ -87,6 +90,22 @@ defmodule Exchange.Exchange do
     else
       reply_error("Invalid guest", state)
     end
+  end
+
+  def handle_call(
+        {:add_good, good},
+        _from,
+        %{id: id, goods: goods, ids_guests: ids_guests} = state
+      ) do
+    new_state = Map.put(state, :goods, [good | goods])
+
+    Enum.each(ids_guests, fn {_, guest} ->
+      data = Enum.join([Atom.to_string(id), Good.encode(good)], "#")
+      msg = msg_ok_user(data)
+      User.receive_msg(guest, {msg, Prot.good_added()})
+    end)
+
+    reply_ok("Host connected", new_state)
   end
 
   # Guest
@@ -146,7 +165,6 @@ defmodule Exchange.Exchange do
         _from,
         %{id: id, host: host, guests_ids: guests_ids} = state
       ) do
-    IO.puts("#{inspect(guests_ids)}")
     guest_id = Map.get(guests_ids, guest)
 
     if guest_id != nil do

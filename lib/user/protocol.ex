@@ -24,6 +24,7 @@ defmodule Exchange.Protocol do
   define(:guest_disconnected, @ok_opcode + 3)
   define(:guest_banned, @ok_opcode + 4)
   define(:rcv_from_guest, @ok_opcode + 5)
+  define(:good_added, @ok_opcode + 6)
 
   # Server - ERROR
   # All errors are the 'Correct Code' + 75
@@ -33,15 +34,19 @@ defmodule Exchange.Protocol do
   define(:err_guest_disconnected, guest_disconnected + 75)
   define(:err_guest_banned, guest_banned + 75)
   define(:err_rcv_from_guest, rcv_from_guest + 75)
+  define(:err_good_added, good_added + 75)
 
-  # User
+  ## User
+  # Host
   define(:sign_in, 1)
   define(:log_in, 2)
   define(:sign_exchange, 4)
   define(:connect_host, 5)
   define(:msg_to_guest, 6)
+  define(:add_good, 7)
   define(:ban_guest, 11)
 
+  # Guest
   define(:connect_guest, 30)
   define(:disconnect_guest, 31)
   define(:msg_to_host, 35)

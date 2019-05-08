@@ -1,17 +1,13 @@
 defmodule Exchange.Execute.Utils do
   def execute_new_user(fun, data, state) do
-    user = String.split(data, "#")
+    user = String.split(data, "#", parts: 2)
+    [username, password] = user
+    user
 
-    case user do
-      [username, password] ->
-        User.to_struct(user)
-        |> fun.()
-        |> check_regist_user(username)
-        |> respond({Map.put(state, :user, User.to_struct(user)), state})
-
-      _ ->
-        respond_error("Invalid input", state)
-    end
+    User.to_struct(user)
+    |> fun.()
+    |> check_regist_user(username)
+    |> respond({Map.put(state, :user, User.to_struct(user)), state})
   end
 
   def check_regist_user(result, username) do
@@ -30,8 +26,7 @@ defmodule Exchange.Execute.Utils do
   end
 
   def parse_msg_to_guest(data) when is_binary(data) do
-    [exchange | rest_msg] = String.split(data, "#")
-    [guest_id | msg] = rest_msg
+    [exchange, guest_id, msg] = String.split(data, "#", parts: 3)
     {String.to_atom(exchange), guest_id, msg}
   end
 

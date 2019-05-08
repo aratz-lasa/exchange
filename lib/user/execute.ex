@@ -45,7 +45,11 @@ defmodule Exchange.Execute do
   end
 
   # add good to exhchange
-  def execute({7, data}, state) do
+  def execute({7, data}, %{user: user} = state) do
+    [exchange | good] = String.split(data, "#", parts: 4)
+    good = Good.to_struct(good)
+    response = Xch.add_good(String.to_atom(exchange), good)
+    respond(response, state)
   end
 
   # accept offer
@@ -62,7 +66,7 @@ defmodule Exchange.Execute do
 
   # ban guest from exchange
   def execute({11, data}, state) do
-    [exchange, guest_id] = String.split(data, "#")
+    [exchange, guest_id] = String.split(data, "#", parts: 2)
 
     Xch.ban_guest(String.to_atom(exchange), guest_id)
     |> respond(state)
@@ -97,7 +101,7 @@ defmodule Exchange.Execute do
 
   # send message to host
   def execute({35, data}, %{user: user} = state) do
-    [exchange, msg] = String.split(data, "#")
+    [exchange, msg] = String.split(data, "#", parts: 2)
     guest = user.username
 
     Xch.msg_to_host(String.to_atom(exchange), guest, msg)

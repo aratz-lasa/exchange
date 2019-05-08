@@ -70,6 +70,29 @@ defmodule ExchangeInHost do
     assert exchange_id == to_string(from)
   end
 
+  test "add good to exchange", state do
+    guest_socket = state[:guest_socket]
+    exchange_id = state[:exchange_id]
+    guest_id = state[:guest_id]
+    # ban guest
+    socket = state[:socket]
+    opcode_out = Prot.add_good()
+    good = %Good{name: "owl", price: 12, description: "filosophy"}
+    data_out = Enum.join([exchange_id, Good.encode(good)], "#")
+    msg_out = <<opcode_out>> <> data_out
+    :ok = :gen_tcp.send(socket, msg_out)
+    # Check in host socket
+    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
+    [opcode_in | data_in] = msg_in
+    assert opcode_in == Prot.ok_opcode()
+    # Check in guest socket
+    {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
+    [opcode_in | data] = msg_in
+    assert opcode_in == Prot.good_added()
+    [from | good] = String.split(to_string(data), "#", parts: 4)
+    assert exchange_id == from
+  end
+
   # Utils
   def sign_in(user, pass) do
     # Create TCP connection
