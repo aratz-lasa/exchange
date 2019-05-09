@@ -74,7 +74,6 @@ defmodule ExchangeInHost do
     add_good(state)
   end
 
-
   # Utils
   def sign_in(user, pass) do
     # Create TCP connection

@@ -49,5 +49,6 @@ defmodule Exchange.Protocol do
   # Guest
   define(:connect_guest, 30)
   define(:disconnect_guest, 31)
+  define(:get_goods, 32)
   define(:msg_to_host, 35)
 end

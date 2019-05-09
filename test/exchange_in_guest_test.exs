@@ -73,6 +73,23 @@ defmodule ExchangeInGuest do
     assert what == msg
   end
 
+  test "get all exchange's goods", state do
+    guest_socket = state[:guest_socket]
+    exchange_id = state[:exchange_id]
+    guest_id = state[:guest_id]
+    # add good
+    good = add_good(state)
+    # ask for goods
+    opcode_out = Prot.get_goods()
+    data_out = exchange_id
+    msg_out = <<opcode_out>> <> data_out
+    :ok = :gen_tcp.send(guest_socket, msg_out)
+    # Check in guest socket
+    {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
+    [opcode_in | data_in] = msg_in
+    assert opcode_in == Prot.ok_opcode()
+  end
+
   # Utils
   def sign_in(user, pass) do
     # Create TCP connection

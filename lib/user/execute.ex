@@ -62,7 +62,6 @@ defmodule Exchange.Execute do
 
   # purge exchange
   def execute({10, data}, state) do
-  
   end
 
   # ban guest from exchange
@@ -94,10 +93,9 @@ defmodule Exchange.Execute do
 
   # get exchange goods
   def execute({32, data}, state) do
-    String.to_atom data
-    |> Xch.get_goods
+    String.to_atom(data)
+    |> Xch.get_goods()
     |> respond(state)
-
   end
 
   # send offer to host

@@ -101,18 +101,23 @@ defmodule Exchange.Exchange do
         _from,
         %{id: id, goods: goods, ids_guests: ids_guests} = state
       ) do
-        if good.id == "" or good.id == nil do # if nil, means its new good
-          good_id = Randomizer.generate!(20) 
-          good = Map.put(good, :id, good_id)
-        end
-        new_goods = Map.put(goods, good.id, good) # Idempotence
-        new_state = Map.put(state, :goods, new_goods)
-        # Notify guests
+    # if nil, means it is a new good
+    good =
+      if good.id == "" or good.id == nil do
+        good_id = Randomizer.generate!(20)
+        Map.put(good, :id, good_id)
+      end
+
+    # Idempotence
+    new_goods = Map.put(goods, good.id, good)
+    new_state = Map.put(state, :goods, new_goods)
+    # Notify guests
     Enum.each(ids_guests, fn {_, guest} ->
       data = Enum.join([Atom.to_string(id), Good.encode(good)], "#")
       msg = msg_ok_user(data)
       User.receive_msg(guest, {msg, Prot.good_added()})
     end)
+
     reply_ok(good.id, new_state)
   end
 
@@ -184,9 +189,9 @@ defmodule Exchange.Exchange do
     end
   end
 
-  def handle_call(:get_goods, _from, %{id: id, goods: goods}=state) do
-    [id| goods]
-    |> Enum.reduce(fn(x, acc) -> acc <> "#" <> Good.encode(x) end)
+  def handle_call(:get_goods, _from, %{id: id, goods: goods} = state) do
+    [to_string(id) | Map.values(goods)]
+    |> Enum.reduce(fn x, acc -> acc <> "#" <> Good.encode(x) end)
     |> reply_ok(state)
   end
 end
