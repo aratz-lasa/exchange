@@ -121,4 +121,28 @@ defmodule ExchangeInGuest do
     assert opcode_in == Prot.ok_opcode()
     to_string(exchange_id)
   end
+
+  def add_good(state) do
+    guest_socket = state[:guest_socket]
+    exchange_id = state[:exchange_id]
+    guest_id = state[:guest_id]
+    # ban guest
+    socket = state[:socket]
+    opcode_out = Prot.add_good()
+    good = %Good{name: "owl", price: 12, description: "filosophy"}
+    data_out = Enum.join([exchange_id, Good.encode(good)], "#")
+    msg_out = <<opcode_out>> <> data_out
+    :ok = :gen_tcp.send(socket, msg_out)
+    # Check in host socket
+    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
+    [opcode_in | data_in] = msg_in
+    assert opcode_in == Prot.ok_opcode()
+    # Check in guest socket
+    {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
+    [opcode_in | data] = msg_in
+    assert opcode_in == Prot.good_added()
+    [from | good] = String.split(to_string(data), "#", parts: 2)
+    assert exchange_id == from
+    Good.decode(to_string(good))
+  end
 end

@@ -1,6 +1,6 @@
 # Exchange
 
-**TODO: Add description**
+Backend system for anonymous temporary exchanges.  
 
 ## Installation
 

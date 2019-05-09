@@ -11,7 +11,7 @@ defmodule Exchange.Exchange do
 
   def init({id, host}) do
     {:ok,
-     %{id: id, host: host, ids_guests: %{}, guests_ids: %{}, goods: [], banned: MapSet.new()}}
+     %{id: id, host: host, ids_guests: %{}, guests_ids: %{}, goods: %{}, banned: MapSet.new()}}
   end
 
   ## API
@@ -43,6 +43,10 @@ defmodule Exchange.Exchange do
 
   def msg_to_host(id, guest, msg) do
     GenServer.call(id, {:msg_to_host, String.to_atom(guest), msg})
+  end
+
+  def get_goods(id) do
+    GenServer.call(id, :get_goods)
   end
 
   ## Callbacks
@@ -97,15 +101,19 @@ defmodule Exchange.Exchange do
         _from,
         %{id: id, goods: goods, ids_guests: ids_guests} = state
       ) do
-    new_state = Map.put(state, :goods, [good | goods])
-
+        if good.id == "" or good.id == nil do # if nil, means its new good
+          good_id = Randomizer.generate!(20) 
+          good = Map.put(good, :id, good_id)
+        end
+        new_goods = Map.put(goods, good.id, good) # Idempotence
+        new_state = Map.put(state, :goods, new_goods)
+        # Notify guests
     Enum.each(ids_guests, fn {_, guest} ->
       data = Enum.join([Atom.to_string(id), Good.encode(good)], "#")
       msg = msg_ok_user(data)
       User.receive_msg(guest, {msg, Prot.good_added()})
     end)
-
-    reply_ok("Host connected", new_state)
+    reply_ok(good.id, new_state)
   end
 
   # Guest
@@ -174,5 +182,11 @@ defmodule Exchange.Exchange do
     else
       reply_error("Invalid guest", state)
     end
+  end
+
+  def handle_call(:get_goods, _from, %{id: id, goods: goods}=state) do
+    [id| goods]
+    |> Enum.reduce(fn(x, acc) -> acc <> "#" <> Good.encode(x) end)
+    |> reply_ok(state)
   end
 end
