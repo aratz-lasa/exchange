@@ -88,6 +88,8 @@ defmodule ExchangeInGuest do
     {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
     [opcode_in | data_in] = msg_in
     assert opcode_in == Prot.ok_opcode()
+    [exchange, data] = String.split(to_string(data_in), "#", parts: 2)
+    assert good == Good.decode(to_string(data))
   end
 
   # Utils

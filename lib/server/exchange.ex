@@ -118,7 +118,7 @@ defmodule Exchange.Exchange do
       User.receive_msg(guest, {msg, Prot.good_added()})
     end)
 
-    reply_ok(good.id, new_state)
+    reply_ok(Good.encode(good), new_state)
   end
 
   # Guest
