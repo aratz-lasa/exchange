@@ -49,6 +49,10 @@ defmodule Exchange.Exchange do
     GenServer.call(id, :get_goods)
   end
 
+  def send_offer(id, offer) do
+    GenServer.call(id, {:send_offer, offer})
+  end
+
   ## Callbacks
   # Host
   def handle_call({:connect_host, host}, _from, state) do
@@ -193,5 +197,12 @@ defmodule Exchange.Exchange do
     [to_string(id) | Map.values(goods)]
     |> Enum.reduce(fn x, acc -> acc <> "#" <> Good.encode(x) end)
     |> reply_ok(state)
+  end
+
+  def handle_call({:send_offer, good_id, price, amount}, _from, %{id: id, goods: goods} = state) do
+    offer = Map.put(:offer_id, Randomizer.generate!(20))
+    encoded_offer = Offer.encode(offer)
+    User.receive_msg(encoded_offer, Prot.rcv_offer())
+    reply_ok(encoded_offer, state)
   end
 end

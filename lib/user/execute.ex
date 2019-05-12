@@ -100,6 +100,10 @@ defmodule Exchange.Execute do
 
   # send offer to host
   def execute({34, data}, state) do
+    [exchange | offer] = String.split(data, "#", parts: 4)
+    offer = Offer.to_struct([nil | offer]) # Offer_id == nil
+    response = Xch.send_offer(String.to_atom(exchange), offer)
+    respond(response, state)
   end
 
   # send message to host

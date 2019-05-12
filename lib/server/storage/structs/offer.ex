@@ -13,4 +13,9 @@ defmodule Offer do
     do: %__MODULE__{offer_id: o, good: g, price: p, amount: a}
 
   def to_struct([o, g, p, a]), do: %__MODULE__{offer_id: o, good: g, price: p, amount: a}
+
+  def encode(%__MODULE__{offer_id: o, good: g, price: p, amount: a}),
+    do: Enum.join([o, g, p, a], "#")
+
+  def decode(data) when is_binary(data), do: to_struct(String.split(data, "#", parts: 4))
 end
