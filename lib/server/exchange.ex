@@ -4,7 +4,7 @@ defmodule Exchange.Exchange do
   alias Exchange.Protocol, as: Prot
   import Exchange.Server.Utils
 
-  def start_link({id, host} = args) do
+  def start_link({id, host}) do
     args = {String.to_atom(id), String.to_atom(host)}
     GenServer.start_link(__MODULE__, args, name: String.to_atom(id))
   end
@@ -32,6 +32,10 @@ defmodule Exchange.Exchange do
 
   def add_good(id, %Good{} = good) do
     GenServer.call(id, {:add_good, good})
+  end
+
+  def accept_offer(id, offer_id) do
+    GenServer.call(id, {:accept_offer, offer_id})
   end
 
   # Guest
@@ -127,6 +131,15 @@ defmodule Exchange.Exchange do
     end)
 
     reply_ok(Good.encode(good), new_state)
+  end
+
+  def handle_call({:accept_offer, offer_id}, _from, %{id: id, offers: offers}=state) do 
+    guest = Map.get(offers, offer_id)
+    msg = msg_ok_user(to_string(id) <> "#" <> offer_id)
+    User.receive_msg(guest, {msg, Prot.offer_accepted()})
+    new_offers = Map.delete(offers, offer_id)
+    new_state = Map.put(state, :offers, new_offers)
+    reply_ok("Offer accepted", new_state)
   end
 
   # Guest

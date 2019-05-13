@@ -53,7 +53,9 @@ defmodule Exchange.Execute do
 
   # accept offer
   def execute({8, data}, state) do
-      
+      [exchange, offer_id] = String.split(data, "#", parts: 2)
+      response = Xch.accept_offer(String.to_atom(exchange), offer_id)
+      respond(response, state)
   end
 
   # decline offer
