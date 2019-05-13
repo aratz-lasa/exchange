@@ -110,6 +110,8 @@ defmodule Exchange.Exchange do
       if good.id == "" or good.id == nil do
         good_id = Randomizer.generate!(20)
         Map.put(good, :id, good_id)
+      else
+        good
       end
 
     # Idempotence
