@@ -13,7 +13,7 @@ defmodule Exchange.Server.Utils do
     User.receive_msg(guest, {msg, opcode})
     new_offers = Map.delete(offers, offer_id)
     new_state = Map.put(state, :offers, new_offers)
-    reply_ok("OK", new_state)
+    reply_ok("Offer handled", new_state)
   end
 
   def delete_guest(guest, %{ids_guests: ids_guests, guests_ids: guests_ids} = state) do

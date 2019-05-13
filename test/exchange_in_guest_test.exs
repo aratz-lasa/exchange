@@ -88,9 +88,11 @@ defmodule ExchangeInGuest do
     {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
     [opcode_in | data_in] = msg_in
     assert opcode_in == Prot.ok_opcode()
-    [exchange, data] = String.split(to_string(data_in), "#", parts: 2)
-    assert good == Good.decode(data)
+    [from, what] = String.split(to_string(data_in), "#", parts: 2)
+    assert exchange_id == from
+    assert good == Good.decode(what)
   end
+
   test "send offer", state do
     guest_socket = state[:guest_socket]
     exchange_id = state[:exchange_id]
@@ -113,10 +115,10 @@ defmodule ExchangeInGuest do
     {:ok, msg_in} = :gen_tcp.recv(socket, 0)
     [opcode_in | data_in] = msg_in
     assert opcode_in == Prot.rcv_offer()
-    [exchange, guest, data] = String.split(to_string(data_in), "#", parts: 3)
-    assert exchange_id == exchange
-    assert guest_id == guest
-    assert offer == Offer.decode(data)
+    [from, who, what] = String.split(to_string(data_in), "#", parts: 3)
+    assert exchange_id == from
+    assert guest_id == who
+    assert offer == Offer.decode(what)
   end
  
 
@@ -186,10 +188,10 @@ defmodule ExchangeInGuest do
     assert opcode_in == Prot.ok_opcode()
     # Check in guest socket
     {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
-    [opcode_in | data] = msg_in
+    [opcode_in | data_in] = msg_in
     assert opcode_in == Prot.good_added()
-    [from | good] = String.split(to_string(data), "#", parts: 2)
+    [from | what] = String.split(to_string(data_in), "#", parts: 2)
     assert exchange_id == from
-    Good.decode(to_string(good))
+    Good.decode(to_string(what))
   end
 end
