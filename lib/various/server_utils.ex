@@ -7,7 +7,7 @@ defmodule Exchange.Server.Utils do
     |> MapSet.member?(guest)
   end
 
-  def handle_offer({opcode, offer_id}, %{id: id, offers: offers}=state) do
+  def handle_offer({opcode, offer_id}, %{id: id, offers: offers} = state) do
     guest = Map.get(offers, offer_id)
     msg = msg_ok_user(to_string(id) <> "#" <> offer_id)
     User.receive_msg(guest, {msg, opcode})

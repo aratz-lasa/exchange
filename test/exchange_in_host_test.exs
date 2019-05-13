@@ -96,7 +96,7 @@ defmodule ExchangeInHost do
     assert opcode_in == Prot.offer_accepted()
     [from, what] = String.split(to_string(data_in), "#", parts: 2)
     assert exchange_id == from
-    offer_id = offer.id    
+    offer_id = offer.id
     assert offer_id == what
   end
 
@@ -122,7 +122,7 @@ defmodule ExchangeInHost do
     assert opcode_in == Prot.offer_declined()
     [from, what] = String.split(to_string(data_in), "#", parts: 2)
     assert exchange_id == from
-    offer_id = offer.id    
+    offer_id = offer.id
     assert offer_id == what
   end
 

@@ -11,9 +11,15 @@ defmodule Exchange.Exchange do
 
   def init({id, host}) do
     {:ok,
-     %{id: id, host: host, ids_guests: %{}, 
-     guests_ids: %{}, goods: %{}, banned: MapSet.new(),
-     offers: %{}}}
+     %{
+       id: id,
+       host: host,
+       ids_guests: %{},
+       guests_ids: %{},
+       goods: %{},
+       banned: MapSet.new(),
+       offers: %{}
+     }}
   end
 
   ## API
@@ -137,11 +143,11 @@ defmodule Exchange.Exchange do
     reply_ok(Good.encode(good), new_state)
   end
 
-  def handle_call({:accept_offer, offer_id}, _from, state) do 
+  def handle_call({:accept_offer, offer_id}, _from, state) do
     handle_offer({Prot.offer_accepted(), offer_id}, state)
   end
 
-  def handle_call({:decline_offer, offer_id}, _from, state) do 
+  def handle_call({:decline_offer, offer_id}, _from, state) do
     handle_offer({Prot.offer_declined(), offer_id}, state)
   end
 
@@ -219,11 +225,16 @@ defmodule Exchange.Exchange do
     |> reply_ok(state)
   end
 
-  def handle_call({:send_offer, guest, offer}, _from, %{id: id, host: host, guests_ids: guests_ids, offers: offers} = state) do
+  def handle_call(
+        {:send_offer, guest, offer},
+        _from,
+        %{id: id, host: host, guests_ids: guests_ids, offers: offers} = state
+      ) do
     offer = Map.put(offer, :id, Randomizer.generate!(20))
     encoded_offer = Offer.encode(offer)
-    guest_id = Map.get(guests_ids, guest) # TODO: check guest exists
-    msg = msg_ok_user(Enum.join([to_string(id),guest_id,encoded_offer], "#"))
+    # TODO: check guest exists
+    guest_id = Map.get(guests_ids, guest)
+    msg = msg_ok_user(Enum.join([to_string(id), guest_id, encoded_offer], "#"))
     User.receive_msg(host, {msg, Prot.rcv_offer()})
     new_offers = Map.put(offers, offer.id, guest)
     new_state = Map.put(state, :offers, new_offers)

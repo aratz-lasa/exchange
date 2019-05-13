@@ -120,7 +120,6 @@ defmodule ExchangeInGuest do
     assert guest_id == who
     assert offer == Offer.decode(what)
   end
- 
 
   # Utils
   def sign_in(user, pass) do

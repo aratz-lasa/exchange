@@ -53,9 +53,9 @@ defmodule Exchange.Execute do
 
   # accept offer
   def execute({8, data}, state) do
-      [exchange, offer_id] = String.split(data, "#", parts: 2)
-      response = Xch.accept_offer(String.to_atom(exchange), offer_id)
-      respond(response, state)
+    [exchange, offer_id] = String.split(data, "#", parts: 2)
+    response = Xch.accept_offer(String.to_atom(exchange), offer_id)
+    respond(response, state)
   end
 
   # decline offer
@@ -72,7 +72,6 @@ defmodule Exchange.Execute do
   # ban guest from exchange
   def execute({11, data}, state) do
     [exchange, guest_id] = String.split(data, "#", parts: 2)
-
     response = Xch.ban_guest(String.to_atom(exchange), guest_id)
     respond(response, state)
   end
@@ -86,7 +85,7 @@ defmodule Exchange.Execute do
   end
 
   # disconnect guest from exchange
-  def execute({31, data}, %{user: user}=state) do
+  def execute({31, data}, %{user: user} = state) do
     exchange = String.to_atom(data)
     response = Xch.disconnect_guest(exchange, user.username)
     respond(response, state)
@@ -100,9 +99,10 @@ defmodule Exchange.Execute do
   end
 
   # send offer to host
-  def execute({34, data}, %{user: user}=state) do
+  def execute({34, data}, %{user: user} = state) do
     [exchange | offer] = String.split(data, "#", parts: 4)
-    offer = Offer.to_struct([nil | offer]) # Offer_id == nil
+    # Offer_id == nil
+    offer = Offer.to_struct([nil | offer])
     response = Xch.send_offer(String.to_atom(exchange), user.username, offer)
     respond(response, state)
   end
@@ -111,7 +111,6 @@ defmodule Exchange.Execute do
   def execute({35, data}, %{user: user} = state) do
     [exchange, msg] = String.split(data, "#", parts: 2)
     guest = user.username
-
     response = Xch.msg_to_host(String.to_atom(exchange), guest, msg)
     respond(response, state)
   end

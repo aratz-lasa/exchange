@@ -7,10 +7,10 @@ defmodule Exchange.Protocol do
     <<opcode::8, data::bitstring>> = msg
     {opcode, data}
   end
-  
+
   def encode(data, opcode \\ @ok_opcode)
 
-  def encode({:ok, data}, opcode ) do
+  def encode({:ok, data}, opcode) do
     <<opcode::8>> <> data
   end
 
@@ -55,7 +55,6 @@ defmodule Exchange.Protocol do
   define(:accept_offer, 8)
   define(:decline_offer, 9)
   define(:ban_guest, 11)
-  
 
   # Guest
   define(:connect_guest, 30)
