@@ -199,10 +199,11 @@ defmodule Exchange.Exchange do
     |> reply_ok(state)
   end
 
-  def handle_call({:send_offer, good_id, price, amount}, _from, %{id: id, goods: goods} = state) do
-    offer = Map.put(:offer_id, Randomizer.generate!(20))
+  def handle_call({:send_offer, offer}, _from, %{id: id, host: host} = state) do
+    offer = Map.put(offer, :offer_id, Randomizer.generate!(20))
     encoded_offer = Offer.encode(offer)
-    User.receive_msg(encoded_offer, Prot.rcv_offer())
+    msg = msg_ok_user(to_string(id)<>"#"<>encoded_offer)
+    User.receive_msg(host, {msg, Prot.rcv_offer()})
     reply_ok(encoded_offer, state)
   end
 end
