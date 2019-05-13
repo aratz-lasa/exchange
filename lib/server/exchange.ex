@@ -11,7 +11,9 @@ defmodule Exchange.Exchange do
 
   def init({id, host}) do
     {:ok,
-     %{id: id, host: host, ids_guests: %{}, guests_ids: %{}, goods: %{}, banned: MapSet.new()}}
+     %{id: id, host: host, ids_guests: %{}, 
+     guests_ids: %{}, goods: %{}, banned: MapSet.new(),
+     offers: %{}}}
   end
 
   ## API
@@ -49,8 +51,8 @@ defmodule Exchange.Exchange do
     GenServer.call(id, :get_goods)
   end
 
-  def send_offer(id, offer) do
-    GenServer.call(id, {:send_offer, offer})
+  def send_offer(id, guest, offer) do
+    GenServer.call(id, {:send_offer, String.to_atom(guest), offer})
   end
 
   ## Callbacks
@@ -201,11 +203,13 @@ defmodule Exchange.Exchange do
     |> reply_ok(state)
   end
 
-  def handle_call({:send_offer, offer}, _from, %{id: id, host: host} = state) do
-    offer = Map.put(offer, :offer_id, Randomizer.generate!(20))
+  def handle_call({:send_offer, guest, offer}, _from, %{id: id, host: host, offers: offers} = state) do
+    offer = Map.put(offer, :id, Randomizer.generate!(20))
     encoded_offer = Offer.encode(offer)
     msg = msg_ok_user(to_string(id)<>"#"<>encoded_offer)
     User.receive_msg(host, {msg, Prot.rcv_offer()})
-    reply_ok(encoded_offer, state)
+    new_offers = Map.put(offers, offer.id, guest)
+    new_state = Map.put(state, :offers, new_offers)
+    reply_ok(encoded_offer, new_state)
   end
 end

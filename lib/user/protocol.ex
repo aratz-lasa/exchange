@@ -7,8 +7,10 @@ defmodule Exchange.Protocol do
     <<opcode::8, data::bitstring>> = msg
     {opcode, data}
   end
+  
+  def encode(data, opcode \\ @ok_opcode)
 
-  def encode({:ok, data}, opcode \\ @ok_opcode) do
+  def encode({:ok, data}, opcode ) do
     <<opcode::8>> <> data
   end
 
@@ -26,6 +28,8 @@ defmodule Exchange.Protocol do
   define(:rcv_from_guest, @ok_opcode + 5)
   define(:good_added, @ok_opcode + 6)
   define(:rcv_offer, @ok_opcode + 7)
+  define(:offer_accepted, @ok_opcode + 8)
+  define(:offer_declined, @ok_opcode + 9)
 
   # Server - ERROR
   # All errors are the 'Correct Code' + 75
@@ -37,6 +41,8 @@ defmodule Exchange.Protocol do
   define(:err_rcv_from_guest, rcv_from_guest + 75)
   define(:err_good_added, good_added + 75)
   define(:err_rcv_offer, rcv_offer + 75)
+  define(:err_offer_accepted, offer_accepted + 75)
+  define(:err_offer_declined, offer_declined + 75)
 
   ## User
   # Host
@@ -46,7 +52,10 @@ defmodule Exchange.Protocol do
   define(:connect_host, 5)
   define(:msg_to_guest, 6)
   define(:add_good, 7)
+  define(:accept_offer, 8)
+  define(:decline_offer, 9)
   define(:ban_guest, 11)
+  
 
   # Guest
   define(:connect_guest, 30)

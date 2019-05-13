@@ -32,9 +32,8 @@ defmodule Exchange.Execute do
   def execute({5, data}, state) do
     exchange = String.to_atom(data)
     host_name = Map.get(state, :user).username
-
-    Xch.connect_host(exchange, host_name)
-    |> respond(state)
+    response = Xch.connect_host(exchange, host_name)
+    respond(response, state)
   end
 
   # send message to guest
@@ -45,7 +44,7 @@ defmodule Exchange.Execute do
   end
 
   # add good to exhchange
-  def execute({7, data}, %{user: user} = state) do
+  def execute({7, data}, state) do
     [exchange | good] = String.split(data, "#", parts: 2)
     good = Good.decode(to_string(good))
     response = Xch.add_good(String.to_atom(exchange), good)
@@ -54,6 +53,7 @@ defmodule Exchange.Execute do
 
   # accept offer
   def execute({8, data}, state) do
+
   end
 
   # decline offer
@@ -68,27 +68,23 @@ defmodule Exchange.Execute do
   def execute({11, data}, state) do
     [exchange, guest_id] = String.split(data, "#", parts: 2)
 
-    Xch.ban_guest(String.to_atom(exchange), guest_id)
-    |> respond(state)
+    response = Xch.ban_guest(String.to_atom(exchange), guest_id)
+    respond(response, state)
   end
 
   ## GUEST
   # connect guest to exchange
   def execute({30, data}, %{user: user} = state) do
     exchange = String.to_atom(data)
-    guest = user.username
-
-    Xch.connect_guest(exchange, guest)
-    |> respond(state)
+    response = Xch.connect_guest(exchange, user.username)
+    respond(response, state)
   end
 
   # disconnect guest from exchange
-  def execute({31, data}, state) do
+  def execute({31, data}, %{user: user}=state) do
     exchange = String.to_atom(data)
-    guest = Map.get(state, :user).username
-
-    Xch.disconnect_guest(exchange, guest)
-    |> respond(state)
+    response = Xch.disconnect_guest(exchange, user.username)
+    respond(response, state)
   end
 
   # get exchange goods
@@ -99,10 +95,10 @@ defmodule Exchange.Execute do
   end
 
   # send offer to host
-  def execute({34, data}, state) do
+  def execute({34, data}, %{user: user}=state) do
     [exchange | offer] = String.split(data, "#", parts: 4)
     offer = Offer.to_struct([nil | offer]) # Offer_id == nil
-    response = Xch.send_offer(String.to_atom(exchange), offer)
+    response = Xch.send_offer(String.to_atom(exchange), user.username, offer)
     respond(response, state)
   end
 
@@ -111,7 +107,7 @@ defmodule Exchange.Execute do
     [exchange, msg] = String.split(data, "#", parts: 2)
     guest = user.username
 
-    Xch.msg_to_host(String.to_atom(exchange), guest, msg)
-    |> respond(state)
+    response = Xch.msg_to_host(String.to_atom(exchange), guest, msg)
+    respond(response, state)
   end
 end
