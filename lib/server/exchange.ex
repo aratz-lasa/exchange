@@ -203,10 +203,11 @@ defmodule Exchange.Exchange do
     |> reply_ok(state)
   end
 
-  def handle_call({:send_offer, guest, offer}, _from, %{id: id, host: host, offers: offers} = state) do
+  def handle_call({:send_offer, guest, offer}, _from, %{id: id, host: host, guests_ids: guests_ids, offers: offers} = state) do
     offer = Map.put(offer, :id, Randomizer.generate!(20))
     encoded_offer = Offer.encode(offer)
-    msg = msg_ok_user(to_string(id)<>"#"<>encoded_offer)
+    guest_id = Map.get(guests_ids, guest) # TODO: check guest exists
+    msg = msg_ok_user(Enum.join([to_string(id),guest_id,encoded_offer], "#"))
     User.receive_msg(host, {msg, Prot.rcv_offer()})
     new_offers = Map.put(offers, offer.id, guest)
     new_state = Map.put(state, :offers, new_offers)

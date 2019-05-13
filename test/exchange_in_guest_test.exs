@@ -113,8 +113,9 @@ defmodule ExchangeInGuest do
     {:ok, msg_in} = :gen_tcp.recv(socket, 0)
     [opcode_in | data_in] = msg_in
     assert opcode_in == Prot.rcv_offer()
-    [exchange, data] = String.split(to_string(data_in), "#", parts: 2)
+    [exchange, guest, data] = String.split(to_string(data_in), "#", parts: 3)
     assert exchange_id == exchange
+    assert guest_id == guest
     assert offer == Offer.decode(data)
   end
  

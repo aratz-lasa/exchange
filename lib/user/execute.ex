@@ -53,7 +53,7 @@ defmodule Exchange.Execute do
 
   # accept offer
   def execute({8, data}, state) do
-
+      
   end
 
   # decline offer
