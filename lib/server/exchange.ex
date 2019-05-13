@@ -38,6 +38,10 @@ defmodule Exchange.Exchange do
     GenServer.call(id, {:accept_offer, offer_id})
   end
 
+  def decline_offer(id, offer_id) do
+    GenServer.call(id, {:decline_offer, offer_id})
+  end
+
   # Guest
   def connect_guest(id, guest) do
     GenServer.call(id, {:connect_guest, String.to_atom(guest)})
@@ -133,13 +137,12 @@ defmodule Exchange.Exchange do
     reply_ok(Good.encode(good), new_state)
   end
 
-  def handle_call({:accept_offer, offer_id}, _from, %{id: id, offers: offers}=state) do 
-    guest = Map.get(offers, offer_id)
-    msg = msg_ok_user(to_string(id) <> "#" <> offer_id)
-    User.receive_msg(guest, {msg, Prot.offer_accepted()})
-    new_offers = Map.delete(offers, offer_id)
-    new_state = Map.put(state, :offers, new_offers)
-    reply_ok("Offer accepted", new_state)
+  def handle_call({:accept_offer, offer_id}, _from, state) do 
+    handle_offer({Prot.offer_accepted(), offer_id}, state)
+  end
+
+  def handle_call({:decline_offer, offer_id}, _from, state) do 
+    handle_offer({Prot.offer_declined(), offer_id}, state)
   end
 
   # Guest

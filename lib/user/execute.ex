@@ -60,6 +60,9 @@ defmodule Exchange.Execute do
 
   # decline offer
   def execute({9, data}, state) do
+    [exchange, offer_id] = String.split(data, "#", parts: 2)
+    response = Xch.decline_offer(String.to_atom(exchange), offer_id)
+    respond(response, state)
   end
 
   # purge exchange

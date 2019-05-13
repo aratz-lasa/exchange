@@ -1,8 +1,19 @@
 defmodule Exchange.Server.Utils do
+  alias Exchange.User
+  
   def check_banned(guest, state) do
     state
     |> Map.get(:banned)
     |> MapSet.member?(guest)
+  end
+
+  def offer_handler({opcode, offer_id}, %{id: id, offers: offers}=state) do
+    guest = Map.get(offers, offer_id)
+    msg = msg_ok_user(to_string(id) <> "#" <> offer_id)
+    User.receive_msg(guest, {msg, opcode})
+    new_offers = Map.delete(offers, offer_id)
+    new_state = Map.put(state, :offers, new_offers)
+    reply_ok("OK", new_state)
   end
 
   def delete_guest(guest, %{ids_guests: ids_guests, guests_ids: guests_ids} = state) do
