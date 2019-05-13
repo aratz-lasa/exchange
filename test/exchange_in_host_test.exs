@@ -100,6 +100,32 @@ defmodule ExchangeInHost do
     assert offer_id == what
   end
 
+  test "decline offer", state do
+    # Initialize offer (test in 'exchange_in_guest')
+    offer = send_offer(state)
+    # Initialize variables
+    guest_socket = state[:guest_socket]
+    exchange_id = state[:exchange_id]
+    # Accept offer
+    socket = state[:socket]
+    opcode_out = Prot.decline_offer()
+    data_out = Enum.join([exchange_id, offer.id], "#")
+    msg_out = <<opcode_out>> <> data_out
+    :ok = :gen_tcp.send(socket, msg_out)
+    # Check host socket
+    {:ok, msg_in} = :gen_tcp.recv(socket, 0)
+    [opcode_in | data_in] = msg_in
+    assert opcode_in == Prot.ok_opcode()
+    # Check guest socket
+    {:ok, msg_in} = :gen_tcp.recv(guest_socket, 0)
+    [opcode_in | data_in] = msg_in
+    assert opcode_in == Prot.offer_declined()
+    [from, what] = String.split(to_string(data_in), "#", parts: 2)
+    assert exchange_id == from
+    offer_id = offer.id    
+    assert offer_id == what
+  end
+
   # Utils
   def sign_in(user, pass) do
     # Create TCP connection
